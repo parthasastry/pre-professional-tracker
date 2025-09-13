@@ -32,7 +32,12 @@ export class ApiGatewayConstruct extends Construct {
             restApiName: 'Pre-Professional Tracker API',
             description: 'API for Pre-Professional Tracker - University-centric student tracking platform',
             defaultCorsPreflightOptions: {
-                allowOrigins: apigateway.Cors.ALL_ORIGINS,
+                allowOrigins: [
+                    'http://localhost:5173', // Vite dev server
+                    'http://localhost:3000', // Fallback for other dev servers
+                    'https://*.amplifyapp.com', // AWS Amplify production
+                    'https://*.vercel.app', // Vercel production
+                ],
                 allowMethods: apigateway.Cors.ALL_METHODS,
                 allowHeaders: [
                     'Content-Type',

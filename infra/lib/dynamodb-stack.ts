@@ -31,9 +31,7 @@ export class DatabaseConstruct extends Construct {
             tableName: process.env.TABLE_UNIVERSITIES || 'pre-professional-tracker-universities',
             partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-            pointInTimeRecoverySpecification: {
-                pointInTimeRecoveryEnabled: true,
-            },
+            pointInTimeRecovery: true,
         });
 
         // GSI for querying by domain
@@ -48,9 +46,7 @@ export class DatabaseConstruct extends Construct {
             partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-            pointInTimeRecoverySpecification: {
-                pointInTimeRecoveryEnabled: true,
-            },
+            pointInTimeRecovery: true,
         });
 
         // GSI for querying by email
@@ -72,9 +68,7 @@ export class DatabaseConstruct extends Construct {
             partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'experience_id', type: dynamodb.AttributeType.STRING },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-            pointInTimeRecoverySpecification: {
-                pointInTimeRecoveryEnabled: true,
-            },
+            pointInTimeRecovery: true,
             stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
         });
 
@@ -98,9 +92,7 @@ export class DatabaseConstruct extends Construct {
             partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'course_id', type: dynamodb.AttributeType.STRING },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-            pointInTimeRecoverySpecification: {
-                pointInTimeRecoveryEnabled: true,
-            },
+            pointInTimeRecovery: true,
             stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
         });
 
@@ -117,9 +109,7 @@ export class DatabaseConstruct extends Construct {
             partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'checklist_id', type: dynamodb.AttributeType.STRING },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-            pointInTimeRecoverySpecification: {
-                pointInTimeRecoveryEnabled: true,
-            },
+            pointInTimeRecovery: true,
             stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
         });
 
