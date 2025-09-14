@@ -45,10 +45,12 @@ export const handler = async (event) => {
                     return formatResponse(400, { error: 'Invalid action' });
                 }
             case 'GET':
-                if (payload.action === 'get_subscription_status') {
-                    return await getSubscriptionStatus(user_id, university_id);
+                // Check if this is a plans request (no path parameters)
+                if (!user_id && !university_id) {
+                    return await getAvailablePlans();
                 } else {
-                    return formatResponse(400, { error: 'Invalid action' });
+                    // For subscription status, if we have user_id and university_id, return subscription status
+                    return await getSubscriptionStatus(user_id, university_id);
                 }
             default:
                 return formatResponse(405, { error: 'Method not allowed' });
@@ -287,28 +289,39 @@ async function getAvailablePlans() {
             {
                 id: 'monthly',
                 name: 'Monthly Plan',
-                price_id: process.env.STRIPE_MONTHLY_PRICE_ID,
+                price: 9.99,
+                interval: 'month',
+                priceId: process.env.STRIPE_MONTHLY_PRICE_ID,
                 description: 'Perfect for short-term tracking',
-                features: ['Unlimited experiences', 'GPA tracking', 'PDF export', 'Priority support']
+                features: ['Unlimited experiences', 'GPA tracking', 'PDF export', 'Priority support'],
+                popular: false
             },
             {
                 id: 'yearly',
                 name: 'Yearly Plan',
-                price_id: process.env.STRIPE_YEARLY_PRICE_ID,
+                price: 99.99,
+                interval: 'year',
+                priceId: process.env.STRIPE_YEARLY_PRICE_ID,
                 description: 'Best value for long-term planning',
-                features: ['Everything in Monthly', '2 months free', 'Advanced analytics', 'University partnerships']
-            },
-            {
-                id: 'student',
-                name: 'Student Plan',
-                price_id: process.env.STRIPE_STUDENT_PRICE_ID,
-                description: 'Discounted rate for students',
-                features: ['Everything in Monthly', 'Student discount', 'Study groups', 'Career guidance']
+                features: ['Everything in Monthly', '2 months free', 'Advanced analytics', 'University partnerships'],
+                popular: true
             }
         ];
 
+        // Filter out plans without valid price IDs
+        const validPlans = plans.filter(plan => plan.priceId && plan.priceId.trim() !== '');
+
+        // If no valid plans, return a message
+        if (validPlans.length === 0) {
+            return formatResponse(200, {
+                plans: [],
+                message: 'No subscription plans are currently available. Please contact support.',
+                success: true
+            });
+        }
+
         return formatResponse(200, {
-            plans: plans.filter(plan => plan.price_id), // Only return plans with valid price IDs
+            plans: validPlans,
             success: true
         });
 

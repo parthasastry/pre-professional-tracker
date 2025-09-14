@@ -72,8 +72,7 @@ export class LambdaConstruct extends Construct {
                 STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
                 STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || '',
                 STRIPE_MONTHLY_PRICE_ID: process.env.STRIPE_MONTHLY_PRICE_ID || '',
-                STRIPE_YEARLY_PRICE_ID: process.env.STRIPE_YEARLY_PRICE_ID || '',
-                STRIPE_STUDENT_PRICE_ID: process.env.STRIPE_STUDENT_PRICE_ID || '',
+                STRIPE_YEARLY_PRICE_ID: process.env.STRIPE_YEARLY_PRICE_ID || ''
             },
         };
 

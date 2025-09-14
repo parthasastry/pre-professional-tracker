@@ -4,12 +4,15 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import amplifyConfig from './aws-config';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import Login from './components/Auth';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import Home from './components/Home';
 import Dashboard from './components/Dashboard';
+import Subscription from './components/Subscription';
 import RequireAuth from './components/RequireAuth';
+import TrialProtectedRoute from './components/TrialProtectedRoute';
 
 // Initialize Amplify
 Amplify.configure(amplifyConfig);
@@ -36,10 +39,20 @@ const AppContent = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Home />} />
           <Route
+            path="/subscription"
+            element={
+              <RequireAuth>
+                <Subscription />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/dashboard"
             element={
               <RequireAuth>
-                <Dashboard />
+                <TrialProtectedRoute>
+                  <Dashboard />
+                </TrialProtectedRoute>
               </RequireAuth>
             }
           />
@@ -54,7 +67,9 @@ const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <SubscriptionProvider>
+          <AppContent />
+        </SubscriptionProvider>
       </AuthProvider>
     </BrowserRouter>
   );

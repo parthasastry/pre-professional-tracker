@@ -1,13 +1,17 @@
 // src/services/api.js
-import { getCurrentUser } from 'aws-amplify/auth';
+import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 
 const API_BASE_URL = import.meta.env.VITE_BASE_API_URL;
 
 export const api = {
     async request(endpoint, options = {}) {
         try {
-            const user = await getCurrentUser();
-            const token = user.signInUserSession.idToken.jwtToken;
+            const session = await fetchAuthSession();
+            const token = session.tokens?.idToken?.toString();
+
+            if (!token) {
+                throw new Error('No authentication token available');
+            }
 
             const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 ...options,
