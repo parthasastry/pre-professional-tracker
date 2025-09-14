@@ -2,13 +2,18 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+
+export interface UserPoolConstructProps {
+    postConfirmationLambda: lambda.Function;
+}
 
 export class UserPoolConstruct extends Construct {
     public readonly userPool: cognito.UserPool;
     public readonly userPoolClient: cognito.UserPoolClient;
     public readonly identityPool: cognito.CfnIdentityPool;
 
-    constructor(scope: Construct, id: string) {
+    constructor(scope: Construct, id: string, props: UserPoolConstructProps) {
         super(scope, id);
 
         // User Pool
@@ -60,6 +65,9 @@ export class UserPoolConstruct extends Construct {
             deviceTracking: {
                 challengeRequiredOnNewDevice: true,
                 deviceOnlyRememberedOnUserPrompt: true,
+            },
+            lambdaTriggers: {
+                postConfirmation: props.postConfirmationLambda,
             },
         });
 

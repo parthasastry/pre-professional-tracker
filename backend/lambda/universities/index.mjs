@@ -178,7 +178,8 @@ async function deleteUniversity(university_id) {
 async function listUniversities() {
     const response = await docClient.send(new ScanCommand({
         TableName: tableName,
-        FilterExpression: 'status = :status',
+        FilterExpression: '#status = :status',
+        ExpressionAttributeNames: { '#status': 'status' },
         ExpressionAttributeValues: { ':status': 'active' }
     }));
 

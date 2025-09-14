@@ -4,26 +4,122 @@ import { getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth'
 import { Authenticator } from '@aws-amplify/ui-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import useUniversities from '../hooks/useUniversities'
 
-// Custom authentication services configuration
-const services = {
-    async handleSignUp() {
-        // Returning an error will prevent the sign-up process
-        return {
-            hasError: true,
-            error: new Error('Sign up is disabled. Please contact your administrator for an account.')
-        }
-    }
-}
+// University Selector Component
+const UniversitySelector = () => {
+    const { universities, loading, error } = useUniversities();
 
-// Custom components to hide the sign-up option
-const components = {
-    Footer() {
+    if (loading) {
         return (
-            <div className="text-center mt-4 text-sm text-gray-600">
-                Contact your administrator for an account
+            <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    University *
+                </label>
+                <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
+                    Loading universities...
+                </div>
             </div>
-        )
+        );
+    }
+
+    return (
+        <div className="mb-4">
+            <label htmlFor="custom:university_id" className="block text-sm font-medium text-gray-700 mb-2">
+                University *
+            </label>
+            <select
+                id="custom:university_id"
+                name="custom:university_id"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+                <option value="">Select your university</option>
+                {universities.map((university) => (
+                    <option key={university.university_id} value={university.university_id}>
+                        {university.name}
+                    </option>
+                ))}
+            </select>
+            {error && (
+                <p className="mt-1 text-sm text-red-600">Error loading universities: {error}</p>
+            )}
+        </div>
+    );
+};
+
+// Custom components for signup
+const components = {
+    SignUp: {
+        Header() {
+            return (
+                <div className="text-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
+                    <p className="mt-2 text-sm text-gray-600">
+                        Join your university's pre-professional community
+                    </p>
+                </div>
+            )
+        },
+        Footer() {
+            return (
+                <div className="text-center mt-4 text-sm text-gray-600">
+                    {/* First Name field */}
+                    <div className="mb-4">
+                        <label htmlFor="given_name" className="block text-sm font-medium text-gray-700 mb-2">
+                            First Name *
+                        </label>
+                        <input
+                            type="text"
+                            id="given_name"
+                            name="given_name"
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter your first name"
+                        />
+                    </div>
+
+                    {/* Last Name field */}
+                    <div className="mb-4">
+                        <label htmlFor="family_name" className="block text-sm font-medium text-gray-700 mb-2">
+                            Last Name *
+                        </label>
+                        <input
+                            type="text"
+                            id="family_name"
+                            name="family_name"
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter your last name"
+                        />
+                    </div>
+
+                    {/* University selection */}
+                    <UniversitySelector />
+
+                    {/* User type selection */}
+                    <div className="mb-4">
+                        <label htmlFor="custom:user_type" className="block text-sm font-medium text-gray-700 mb-2">
+                            User Type *
+                        </label>
+                        <select
+                            id="custom:user_type"
+                            name="custom:user_type"
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="">Select your role</option>
+                            <option value="student">Student</option>
+                            <option value="advisor">Advisor</option>
+                        </select>
+                    </div>
+
+                    <div className="mt-4 text-sm text-gray-600">
+                        By signing up, you agree to our Terms of Service and Privacy Policy
+                    </div>
+                </div>
+            )
+        }
     }
 }
 
@@ -99,10 +195,26 @@ const Login = () => {
 
     return (
         <div className="flex flex-col justify-center items-center min-h-screen w-full p-5">
+            <style>{`
+                       /* Move the Create Account button to the bottom */
+                       [data-amplify-authenticator] [data-amplify-router] form {
+                           display: flex;
+                           flex-direction: column;
+                       }
+                       
+                       /* Hide the default button position */
+                       [data-amplify-authenticator] [data-amplify-router] form > button[type="submit"] {
+                           order: 999;
+                           margin-top: 1rem;
+                       }
+                       
+                       /* Ensure proper spacing */
+                       [data-amplify-authenticator] [data-amplify-router] form > div:last-of-type {
+                           margin-bottom: 1rem;
+                       }
+                   `}</style>
             <Authenticator
-                services={services}
                 components={components}
-                hideSignUp={true}
             >
                 {({ user }) => <AuthenticatedRedirect user={user} />}
             </Authenticator>

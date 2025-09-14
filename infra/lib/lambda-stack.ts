@@ -40,6 +40,13 @@ export class LambdaConstruct extends Construct {
     public readonly advisorsLambda: lambda.Function;
     public readonly announcementsLambda: lambda.Function;
 
+    // Cognito Triggers
+    public readonly postConfirmationLambda: lambda.Function;
+
+    // Stripe Integration
+    public readonly stripeSubscriptionLambda: lambda.Function;
+    public readonly stripeWebhookLambda: lambda.Function;
+
     constructor(scope: Construct, id: string, props: LambdaConstructProps) {
         super(scope, id);
 
@@ -62,6 +69,11 @@ export class LambdaConstruct extends Construct {
                 TABLE_ANNOUNCEMENTS: props.announcementsTable.tableName,
                 S3_PDFS_BUCKET: props.pdfsBucket.bucketName,
                 REGION: cdk.Stack.of(this).region,
+                STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
+                STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || '',
+                STRIPE_MONTHLY_PRICE_ID: process.env.STRIPE_MONTHLY_PRICE_ID || '',
+                STRIPE_YEARLY_PRICE_ID: process.env.STRIPE_YEARLY_PRICE_ID || '',
+                STRIPE_STUDENT_PRICE_ID: process.env.STRIPE_STUDENT_PRICE_ID || '',
             },
         };
 
@@ -171,6 +183,33 @@ export class LambdaConstruct extends Construct {
             code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/lambda/announcements')),
         });
 
+        // Post Confirmation Lambda (Cognito Trigger)
+        this.postConfirmationLambda = new lambda.Function(this, 'PostConfirmationLambda', {
+            ...commonLambdaProps,
+            functionName: 'pre-professional-tracker-post-confirmation',
+            description: 'Cognito Post Confirmation trigger for user creation',
+            code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/lambda/cognito-triggers/post-confirmation')),
+            handler: 'index.handler',
+        });
+
+        // Stripe Subscription Lambda
+        this.stripeSubscriptionLambda = new lambda.Function(this, 'StripeSubscriptionLambda', {
+            ...commonLambdaProps,
+            functionName: 'pre-professional-tracker-stripe-subscription',
+            description: 'Handle Stripe subscription operations',
+            code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/lambda/stripe-subscription')),
+            handler: 'index.handler',
+        });
+
+        // Stripe Webhook Lambda
+        this.stripeWebhookLambda = new lambda.Function(this, 'StripeWebhookLambda', {
+            ...commonLambdaProps,
+            functionName: 'pre-professional-tracker-stripe-webhook',
+            description: 'Handle Stripe webhook events',
+            code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/lambda/stripe-webhook')),
+            handler: 'index.handler',
+        });
+
         // Grant DynamoDB permissions to all Lambdas
         const dynamoDbPolicy = new iam.PolicyStatement({
             effect: iam.Effect.ALLOW,
@@ -246,10 +285,23 @@ export class LambdaConstruct extends Construct {
             this.universitySettingsLambda,
             this.advisorsLambda,
             this.announcementsLambda,
+            this.postConfirmationLambda,
+            this.stripeSubscriptionLambda,
+            this.stripeWebhookLambda,
         ];
 
         allLambdas.forEach(lambdaFunction => {
             lambdaFunction.addToRolePolicy(dynamoDbPolicy);
+        });
+
+        // Ensure postConfirmationLambda has DynamoDB permissions
+        this.postConfirmationLambda.addToRolePolicy(dynamoDbPolicy);
+
+        // Add Cognito invoke permission for postConfirmationLambda
+        this.postConfirmationLambda.addPermission('CognitoInvokePermission', {
+            principal: new iam.ServicePrincipal('cognito-idp.amazonaws.com'),
+            action: 'lambda:InvokeFunction',
+            sourceArn: `arn:aws:cognito-idp:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:userpool/*`
         });
 
         // Add S3 permissions to PDF generator

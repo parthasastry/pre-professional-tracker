@@ -19,6 +19,8 @@ export interface ApiGatewayConstructProps {
     universitySettingsLambda: lambda.Function;
     advisorsLambda: lambda.Function;
     announcementsLambda: lambda.Function;
+    stripeSubscriptionLambda: lambda.Function;
+    stripeWebhookLambda: lambda.Function;
 }
 
 export class ApiGatewayConstruct extends Construct {
@@ -76,7 +78,8 @@ export class ApiGatewayConstruct extends Construct {
 
         // Universities API
         const universitiesApi = this.api.root.addResource('universities');
-        addAuthorizedMethod(universitiesApi, 'GET', createLambdaIntegration(props.universitiesCRUDLambda));
+        // GET universities list should be public (needed for signup)
+        universitiesApi.addMethod('GET', createLambdaIntegration(props.universitiesCRUDLambda));
         addAuthorizedMethod(universitiesApi, 'POST', createLambdaIntegration(props.universitiesCRUDLambda));
 
         const universityApi = universitiesApi.addResource('{university_id}');
@@ -172,6 +175,22 @@ export class ApiGatewayConstruct extends Construct {
         addAuthorizedMethod(announcementApi, 'GET', createLambdaIntegration(props.announcementsLambda));
         addAuthorizedMethod(announcementApi, 'PUT', createLambdaIntegration(props.announcementsLambda));
         addAuthorizedMethod(announcementApi, 'DELETE', createLambdaIntegration(props.announcementsLambda));
+
+        // Stripe Subscription API
+        const stripeApi = this.api.root.addResource('stripe');
+        const subscriptionApi = stripeApi.addResource('subscription');
+        const subscriptionUserApi = subscriptionApi.addResource('{user_id}').addResource('{university_id}');
+
+        addAuthorizedMethod(subscriptionUserApi, 'GET', createLambdaIntegration(props.stripeSubscriptionLambda));
+        addAuthorizedMethod(subscriptionUserApi, 'POST', createLambdaIntegration(props.stripeSubscriptionLambda));
+
+        // Stripe Plans API (no authentication required for public plans)
+        const plansApi = stripeApi.addResource('plans');
+        plansApi.addMethod('GET', createLambdaIntegration(props.stripeSubscriptionLambda));
+
+        // Stripe Webhook API (no authentication required)
+        const webhookApi = this.api.root.addResource('stripe-webhook');
+        webhookApi.addMethod('POST', createLambdaIntegration(props.stripeWebhookLambda));
 
         // Health Check API
         const healthApi = this.api.root.addResource('health');

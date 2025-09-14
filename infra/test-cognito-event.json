@@ -1,0 +1,1 @@
+{"request":{"userAttributes":{"email":"test@example.com","given_name":"Test","family_name":"User","custom:university_id":"test-university","custom:user_type":"student"},"userSub":"test-user-123"}}

@@ -1,0 +1,14 @@
+{
+    "name": "post-confirmation-trigger",
+    "version": "1.0.0",
+    "description": "Cognito Post Confirmation trigger for user creation",
+    "main": "index.mjs",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "@aws-sdk/client-dynamodb": "^3.450.0",
+        "@aws-sdk/lib-dynamodb": "^3.450.0"
+    }
+}

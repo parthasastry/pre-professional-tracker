@@ -11,7 +11,6 @@ export class PreProfessionalTrackerStack extends cdk.Stack {
         super(scope, id, props);
 
         // Create all constructs
-        const userPool = new UserPoolConstruct(this, 'UserPoolConstruct');
         const database = new DatabaseConstruct(this, 'DatabaseConstruct');
         const s3 = new S3Construct(this, 'S3Construct');
 
@@ -29,6 +28,10 @@ export class PreProfessionalTrackerStack extends cdk.Stack {
             pdfsBucket: s3.pdfsBucket,
         });
 
+        const userPool = new UserPoolConstruct(this, 'UserPoolConstruct', {
+            postConfirmationLambda: lambdas.postConfirmationLambda,
+        });
+
         new ApiGatewayConstruct(this, 'ApiGateway', {
             userPool: userPool.userPool,
             universitiesCRUDLambda: lambdas.universitiesCRUDLambda,
@@ -44,6 +47,8 @@ export class PreProfessionalTrackerStack extends cdk.Stack {
             universitySettingsLambda: lambdas.universitySettingsLambda,
             advisorsLambda: lambdas.advisorsLambda,
             announcementsLambda: lambdas.announcementsLambda,
+            stripeSubscriptionLambda: lambdas.stripeSubscriptionLambda,
+            stripeWebhookLambda: lambdas.stripeWebhookLambda,
         });
 
         // Outputs

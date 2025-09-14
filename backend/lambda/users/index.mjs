@@ -73,6 +73,16 @@ async function createUser(item) {
     item.status = item.status || 'active';
     item.plan = item.plan || 'free';
 
+    // Subscription and trial fields
+    item.subscription_status = item.subscription_status || 'trial';
+    item.trial_ends_at = item.trial_ends_at || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days from now
+    item.stripe_customer_id = item.stripe_customer_id || null;
+    item.stripe_subscription_id = item.stripe_subscription_id || null;
+    item.subscription_plan = item.subscription_plan || null;
+    item.subscription_ends_at = item.subscription_ends_at || null;
+    item.email_verified = item.email_verified || false;
+    item.last_login = item.last_login || null;
+
     await docClient.send(new PutCommand({
         TableName: tableName,
         Item: item,
@@ -92,7 +102,14 @@ async function getUser(user_id, university_id) {
         return formatResponse(404, { error: 'User not found' });
     }
 
-    return formatResponse(200, response.Item);
+    // Add trial status information
+    const user = response.Item;
+    const trialInfo = getTrialStatus(user);
+
+    return formatResponse(200, {
+        ...user,
+        trial_info: trialInfo
+    });
 }
 
 async function listUsersByUniversity(university_id, userType) {
@@ -156,6 +173,21 @@ async function deleteUser(user_id, university_id) {
     }));
 
     return formatResponse(200, { success: true });
+}
+
+function getTrialStatus(user) {
+    const now = new Date();
+    const trialEnds = new Date(user.trial_ends_at);
+    const isTrialActive = user.subscription_status === 'trial' && now < trialEnds;
+    const daysRemaining = Math.max(0, Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24)));
+
+    return {
+        is_trial_active: isTrialActive,
+        trial_ends_at: user.trial_ends_at,
+        days_remaining: daysRemaining,
+        subscription_status: user.subscription_status,
+        requires_subscription: !isTrialActive && user.subscription_status !== 'active'
+    };
 }
 
 function formatResponse(statusCode, body) {

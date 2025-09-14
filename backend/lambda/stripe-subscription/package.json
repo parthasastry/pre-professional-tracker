@@ -1,0 +1,15 @@
+{
+    "name": "stripe-subscription",
+    "version": "1.0.0",
+    "description": "Stripe subscription management for Pre-Professional Tracker",
+    "main": "index.mjs",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "@aws-sdk/client-dynamodb": "^3.450.0",
+        "@aws-sdk/lib-dynamodb": "^3.450.0",
+        "stripe": "^14.7.0"
+    }
+}
