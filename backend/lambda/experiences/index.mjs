@@ -22,27 +22,32 @@ export const handler = async (event) => {
     }
 
     try {
-        const { httpMethod, pathParameters, body, queryStringParameters } = event;
+        const { httpMethod, pathParameters, body, queryStringParameters, requestContext } = event;
         const payload = body ? JSON.parse(body) : {};
-        const { experience_id, university_id } = pathParameters || {};
-        const userId = queryStringParameters?.user_id;
+        const { experience_id } = pathParameters || {};
         const category = queryStringParameters?.category;
+
+        // Extract user_id from JWT token in the request context
+        const userId = requestContext?.authorizer?.claims?.sub || requestContext?.authorizer?.claims?.user_id;
+        const universityId = requestContext?.authorizer?.claims?.['custom:university_id'];
+
+        if (!userId) {
+            return formatResponse(401, { error: 'User ID not found in token' });
+        }
 
         switch (httpMethod) {
             case 'GET':
-                if (experience_id && university_id) {
-                    return await getExperience(experience_id, university_id);
-                } else if (university_id) {
-                    return await listExperiences(university_id, userId, category);
+                if (experience_id) {
+                    return await getExperience(userId, experience_id);
                 } else {
-                    return formatResponse(400, { error: 'university_id required' });
+                    return await listExperiences(universityId, userId, category);
                 }
             case 'POST':
                 return await createExperience(payload);
             case 'PUT':
-                return await updateExperience(experience_id, university_id, payload);
+                return await updateExperience(userId, experience_id, payload);
             case 'DELETE':
-                return await deleteExperience(experience_id, university_id);
+                return await deleteExperience(userId, experience_id);
             default:
                 return formatResponse(405, { error: 'Method not allowed' });
         }
@@ -87,10 +92,10 @@ async function createExperience(item) {
     return formatResponse(201, { success: true, experience: item });
 }
 
-async function getExperience(experience_id, university_id) {
+async function getExperience(user_id, experience_id) {
     const response = await docClient.send(new GetCommand({
         TableName: tableName,
-        Key: { experience_id, university_id }
+        Key: { user_id, experience_id }
     }));
 
     if (!response.Item) {
@@ -103,21 +108,14 @@ async function getExperience(experience_id, university_id) {
 async function listExperiences(university_id, userId, category) {
     let queryParams = {
         TableName: tableName,
-        KeyConditionExpression: 'university_id = :university_id',
-        ExpressionAttributeValues: { ':university_id': university_id }
+        KeyConditionExpression: 'user_id = :user_id',
+        ExpressionAttributeValues: { ':user_id': userId }
     };
 
-    // Filter by user if specified
-    if (userId) {
-        queryParams.IndexName = 'UserIndex';
-        queryParams.KeyConditionExpression = 'user_id = :user_id';
-        queryParams.ExpressionAttributeValues = { ':user_id': userId };
-    }
-
     // Filter by category if specified
-    if (category && !userId) {
+    if (category) {
         queryParams.IndexName = 'CategoryIndex';
-        queryParams.KeyConditionExpression = 'university_id = :university_id AND category = :category';
+        queryParams.KeyConditionExpression = 'user_id = :user_id AND category = :category';
         queryParams.ExpressionAttributeValues[':category'] = category;
     }
 
@@ -126,18 +124,21 @@ async function listExperiences(university_id, userId, category) {
     return formatResponse(200, { items: response.Items || [] });
 }
 
-async function updateExperience(experience_id, university_id, attributes) {
-    if (!experience_id || !university_id) {
-        return formatResponse(400, { error: 'Experience ID and University ID are required' });
+async function updateExperience(user_id, experience_id, attributes) {
+    if (!user_id || !experience_id) {
+        return formatResponse(400, { error: 'User ID and Experience ID are required' });
     }
 
-    attributes.updated_at = new Date().toISOString();
+    // Remove key attributes that cannot be updated
+    const { user_id: _, experience_id: __, university_id: ___, ...updateAttributes } = attributes;
+
+    updateAttributes.updated_at = new Date().toISOString();
 
     let updateExpression = 'SET';
     const expressionAttributeNames = {};
     const expressionAttributeValues = {};
 
-    Object.entries(attributes).forEach(([key, value], index) => {
+    Object.entries(updateAttributes).forEach(([key, value], index) => {
         const attrName = `#attr${index}`;
         const attrValue = `:val${index}`;
         expressionAttributeNames[attrName] = key;
@@ -147,7 +148,7 @@ async function updateExperience(experience_id, university_id, attributes) {
 
     const response = await docClient.send(new UpdateCommand({
         TableName: tableName,
-        Key: { experience_id, university_id },
+        Key: { user_id, experience_id },
         UpdateExpression: updateExpression,
         ExpressionAttributeNames: expressionAttributeNames,
         ExpressionAttributeValues: expressionAttributeValues,
@@ -157,14 +158,14 @@ async function updateExperience(experience_id, university_id, attributes) {
     return formatResponse(200, response.Attributes);
 }
 
-async function deleteExperience(experience_id, university_id) {
-    if (!experience_id || !university_id) {
-        return formatResponse(400, { error: 'Experience ID and University ID are required' });
+async function deleteExperience(user_id, experience_id) {
+    if (!user_id || !experience_id) {
+        return formatResponse(400, { error: 'User ID and Experience ID are required' });
     }
 
     await docClient.send(new DeleteCommand({
         TableName: tableName,
-        Key: { experience_id, university_id }
+        Key: { user_id, experience_id }
     }));
 
     return formatResponse(200, { success: true });

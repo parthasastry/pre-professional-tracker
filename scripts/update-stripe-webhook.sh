@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Script to update Stripe webhook configuration
+echo "🔧 Updating Stripe webhook configuration..."
+
+# New webhook endpoint
+WEBHOOK_URL="https://jtei4wbgq2.execute-api.us-east-2.amazonaws.com/prod/stripe-webhook"
+
+echo "📡 New webhook URL: $WEBHOOK_URL"
+echo ""
+echo "🔍 To update your Stripe webhook:"
+echo ""
+echo "1. Go to your Stripe Dashboard: https://dashboard.stripe.com/webhooks"
+echo "2. Find your existing webhook endpoint"
+echo "3. Click on it to edit"
+echo "4. Update the endpoint URL to: $WEBHOOK_URL"
+echo "5. Make sure these events are selected:"
+echo "   - customer.subscription.created"
+echo "   - customer.subscription.updated"
+echo "   - customer.subscription.deleted"
+echo "   - invoice.payment_succeeded"
+echo "   - invoice.payment_failed"
+echo "6. Save the changes"
+echo ""
+echo "🔑 Webhook Secret (if needed): whsec_v6F0cX2MHSdX6SgidhA3qgIpPxgTd6XJ"
+echo ""
+echo "🧪 To test the webhook:"
+echo "1. Go to the webhook details in Stripe"
+echo "2. Click 'Send test webhook'"
+echo "3. Select 'customer.subscription.created' event"
+echo "4. Send the test webhook"
+echo ""
+echo "📋 After updating the webhook:"
+echo "1. Your subscription status should update automatically"
+echo "2. Check the Lambda logs to see if webhooks are being received"
+echo "3. The frontend should show 'Active Subscription' instead of trial info"

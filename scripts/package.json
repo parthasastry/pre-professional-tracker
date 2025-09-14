@@ -1,0 +1,20 @@
+{
+    "name": "pre-professional-tracker-scripts",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Scripts for seeding and managing the Pre-Professional Tracker database",
+    "main": "seed-universities.js",
+    "scripts": {
+        "seed-universities": "node seed-universities.js",
+        "seed-users": "node seed-users.js",
+        "seed-experiences": "node seed-experiences.js"
+    },
+    "dependencies": {
+        "@aws-sdk/client-dynamodb": "^3.0.0",
+        "@aws-sdk/lib-dynamodb": "^3.0.0",
+        "dotenv": "^16.0.0"
+    },
+    "devDependencies": {
+        "eslint": "^8.0.0"
+    }
+}

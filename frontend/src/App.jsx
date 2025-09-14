@@ -11,6 +11,7 @@ import Footer from './components/Footer';
 import Home from './components/Home';
 import Dashboard from './components/Dashboard';
 import Subscription from './components/Subscription';
+import Experiences from './components/Experiences';
 import RequireAuth from './components/RequireAuth';
 import TrialProtectedRoute from './components/TrialProtectedRoute';
 
@@ -52,6 +53,16 @@ const AppContent = () => {
               <RequireAuth>
                 <TrialProtectedRoute>
                   <Dashboard />
+                </TrialProtectedRoute>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/experiences"
+            element={
+              <RequireAuth>
+                <TrialProtectedRoute>
+                  <Experiences />
                 </TrialProtectedRoute>
               </RequireAuth>
             }

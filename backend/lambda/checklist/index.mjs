@@ -22,27 +22,32 @@ export const handler = async (event) => {
     }
 
     try {
-        const { httpMethod, pathParameters, body, queryStringParameters } = event;
+        const { httpMethod, pathParameters, body, queryStringParameters, requestContext } = event;
         const payload = body ? JSON.parse(body) : {};
-        const { checklist_id, university_id } = pathParameters || {};
-        const userId = queryStringParameters?.user_id;
+        const { checklist_id } = pathParameters || {};
         const status = queryStringParameters?.status;
+
+        // Extract user_id from JWT token in the request context
+        const userId = requestContext?.authorizer?.claims?.sub || requestContext?.authorizer?.claims?.user_id;
+        const universityId = requestContext?.authorizer?.claims?.['custom:university_id'];
+
+        if (!userId) {
+            return formatResponse(401, { error: 'User ID not found in token' });
+        }
 
         switch (httpMethod) {
             case 'GET':
-                if (checklist_id && university_id) {
-                    return await getChecklistItem(checklist_id, university_id);
-                } else if (university_id) {
-                    return await listChecklistItems(university_id, userId, status);
+                if (checklist_id) {
+                    return await getChecklistItem(userId, checklist_id);
                 } else {
-                    return formatResponse(400, { error: 'university_id required' });
+                    return await listChecklistItems(universityId, userId, status);
                 }
             case 'POST':
                 return await createChecklistItem(payload);
             case 'PUT':
-                return await updateChecklistItem(checklist_id, university_id, payload);
+                return await updateChecklistItem(userId, checklist_id, payload);
             case 'DELETE':
-                return await deleteChecklistItem(checklist_id, university_id);
+                return await deleteChecklistItem(userId, checklist_id);
             default:
                 return formatResponse(405, { error: 'Method not allowed' });
         }
@@ -83,10 +88,10 @@ async function createChecklistItem(item) {
     return formatResponse(201, { success: true, checklist_item: item });
 }
 
-async function getChecklistItem(checklist_id, university_id) {
+async function getChecklistItem(user_id, checklist_id) {
     const response = await docClient.send(new GetCommand({
         TableName: tableName,
-        Key: { checklist_id, university_id }
+        Key: { user_id, checklist_id }
     }));
 
     if (!response.Item) {
@@ -99,21 +104,15 @@ async function getChecklistItem(checklist_id, university_id) {
 async function listChecklistItems(university_id, userId, status) {
     let queryParams = {
         TableName: tableName,
-        KeyConditionExpression: 'university_id = :university_id',
-        ExpressionAttributeValues: { ':university_id': university_id }
+        KeyConditionExpression: 'user_id = :user_id',
+        ExpressionAttributeValues: { ':user_id': userId }
     };
 
-    // Filter by user if specified
-    if (userId) {
-        queryParams.IndexName = 'UserIndex';
-        queryParams.KeyConditionExpression = 'user_id = :user_id';
-        queryParams.ExpressionAttributeValues = { ':user_id': userId };
-
-        // Filter by status if specified
-        if (status) {
-            queryParams.KeyConditionExpression = 'user_id = :user_id AND status = :status';
-            queryParams.ExpressionAttributeValues[':status'] = status;
-        }
+    // Filter by status if specified
+    if (status) {
+        queryParams.IndexName = 'StatusIndex';
+        queryParams.KeyConditionExpression = 'user_id = :user_id AND status = :status';
+        queryParams.ExpressionAttributeValues[':status'] = status;
     }
 
     const response = await docClient.send(new QueryCommand(queryParams));
@@ -121,9 +120,9 @@ async function listChecklistItems(university_id, userId, status) {
     return formatResponse(200, { items: response.Items || [] });
 }
 
-async function updateChecklistItem(checklist_id, university_id, attributes) {
-    if (!checklist_id || !university_id) {
-        return formatResponse(400, { error: 'Checklist ID and University ID are required' });
+async function updateChecklistItem(user_id, checklist_id, attributes) {
+    if (!user_id || !checklist_id) {
+        return formatResponse(400, { error: 'User ID and Checklist ID are required' });
     }
 
     attributes.updated_at = new Date().toISOString();
@@ -142,7 +141,7 @@ async function updateChecklistItem(checklist_id, university_id, attributes) {
 
     const response = await docClient.send(new UpdateCommand({
         TableName: tableName,
-        Key: { checklist_id, university_id },
+        Key: { user_id, checklist_id },
         UpdateExpression: updateExpression,
         ExpressionAttributeNames: expressionAttributeNames,
         ExpressionAttributeValues: expressionAttributeValues,
@@ -152,14 +151,14 @@ async function updateChecklistItem(checklist_id, university_id, attributes) {
     return formatResponse(200, response.Attributes);
 }
 
-async function deleteChecklistItem(checklist_id, university_id) {
-    if (!checklist_id || !university_id) {
-        return formatResponse(400, { error: 'Checklist ID and University ID are required' });
+async function deleteChecklistItem(user_id, checklist_id) {
+    if (!user_id || !checklist_id) {
+        return formatResponse(400, { error: 'User ID and Checklist ID are required' });
     }
 
     await docClient.send(new DeleteCommand({
         TableName: tableName,
-        Key: { checklist_id, university_id }
+        Key: { user_id, checklist_id }
     }));
 
     return formatResponse(200, { success: true });

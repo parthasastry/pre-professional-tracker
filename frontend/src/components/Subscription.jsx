@@ -163,13 +163,21 @@ const Subscription = () => {
                 {/* Current Status */}
                 {subscriptionInfo && (
                     <div className="mb-8">
-                        <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${subscriptionInfo.color === 'green' ? 'bg-green-100 text-green-800' :
-                            subscriptionInfo.color === 'red' ? 'bg-red-100 text-red-800' :
-                                subscriptionInfo.color === 'blue' ? 'bg-blue-100 text-blue-800' :
-                                    'bg-gray-100 text-gray-800'
-                            }`}>
-                            <span className="mr-2">●</span>
-                            {subscriptionInfo.message}
+                        <div className="flex items-center justify-between">
+                            <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${subscriptionInfo.color === 'green' ? 'bg-green-100 text-green-800' :
+                                subscriptionInfo.color === 'red' ? 'bg-red-100 text-red-800' :
+                                    subscriptionInfo.color === 'blue' ? 'bg-blue-100 text-blue-800' :
+                                        'bg-gray-100 text-gray-800'
+                                }`}>
+                                <span className="mr-2">●</span>
+                                {subscriptionInfo.message}
+                            </div>
+                            <button
+                                onClick={refreshSubscription}
+                                className="ml-4 px-3 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
+                            >
+                                Refresh
+                            </button>
                         </div>
                     </div>
                 )}

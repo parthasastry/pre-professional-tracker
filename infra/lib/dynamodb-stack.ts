@@ -64,58 +64,72 @@ export class DatabaseConstruct extends Construct {
 
         // Experiences Table - Shadowing and volunteering
         this.experiencesTable = new dynamodb.Table(this, 'ExperiencesTable', {
-            tableName: process.env.TABLE_EXPERIENCES || 'pre-professional-tracker-experiences',
-            partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
+            tableName: process.env.TABLE_EXPERIENCES || 'pre-professional-tracker-experiences-v2',
+            partitionKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'experience_id', type: dynamodb.AttributeType.STRING },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             pointInTimeRecovery: true,
             stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
         });
 
-        // GSI for querying by user
+        // GSI for querying by university (for admin/university-wide queries)
         this.experiencesTable.addGlobalSecondaryIndex({
-            indexName: 'UserIndex',
-            partitionKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
+            indexName: 'UniversityIndex',
+            partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'created_at', type: dynamodb.AttributeType.STRING },
         });
 
-        // GSI for querying by category
+        // GSI for querying by category within a user
         this.experiencesTable.addGlobalSecondaryIndex({
             indexName: 'CategoryIndex',
-            partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
+            partitionKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'category', type: dynamodb.AttributeType.STRING },
         });
 
         // Courses Table - Academic tracking
         this.coursesTable = new dynamodb.Table(this, 'CoursesTable', {
-            tableName: process.env.TABLE_COURSES || 'pre-professional-tracker-courses',
-            partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
+            tableName: process.env.TABLE_COURSES || 'pre-professional-tracker-courses-v2',
+            partitionKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'course_id', type: dynamodb.AttributeType.STRING },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             pointInTimeRecovery: true,
             stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
         });
 
-        // GSI for querying by user
+        // GSI for querying by university (for admin/university-wide queries)
         this.coursesTable.addGlobalSecondaryIndex({
-            indexName: 'UserIndex',
+            indexName: 'UniversityIndex',
+            partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'semester_year', type: dynamodb.AttributeType.STRING },
+        });
+
+        // GSI for querying by semester within a user
+        this.coursesTable.addGlobalSecondaryIndex({
+            indexName: 'SemesterIndex',
             partitionKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'semester_year', type: dynamodb.AttributeType.STRING },
         });
 
         // Checklist Table - Progress tracking
         this.checklistTable = new dynamodb.Table(this, 'ChecklistTable', {
-            tableName: process.env.TABLE_CHECKLIST || 'pre-professional-tracker-checklist',
-            partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
+            tableName: process.env.TABLE_CHECKLIST || 'pre-professional-tracker-checklist-v2',
+            partitionKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'checklist_id', type: dynamodb.AttributeType.STRING },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             pointInTimeRecovery: true,
             stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
         });
 
-        // GSI for querying by user
+        // GSI for querying by university (for admin/university-wide queries)
         this.checklistTable.addGlobalSecondaryIndex({
-            indexName: 'UserIndex',
+            indexName: 'UniversityIndex',
+            partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'status', type: dynamodb.AttributeType.STRING },
+        });
+
+        // GSI for querying by status within a user
+        this.checklistTable.addGlobalSecondaryIndex({
+            indexName: 'StatusIndex',
             partitionKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'status', type: dynamodb.AttributeType.STRING },
         });

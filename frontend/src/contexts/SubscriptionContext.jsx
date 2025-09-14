@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
+import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 
 const SubscriptionContext = createContext();
 
@@ -39,9 +39,45 @@ export const SubscriptionProvider = ({ children }) => {
 
             // Get user attributes from Cognito
             const userAttributes = await fetchUserAttributes();
+            const user = await getCurrentUser();
 
-            // Extract subscription-related attributes
-            const subscriptionData = {
+            // Try to fetch subscription data from API first
+            let apiSubscriptionData = null;
+            try {
+                const session = await fetchAuthSession();
+                const token = session.tokens?.idToken?.toString();
+
+                if (token) {
+                    const apiUrl = import.meta.env.VITE_BASE_API_URL;
+                    const userId = user.userId || user.username || user.sub;
+                    const universityId = userAttributes['custom:university_id'] || 'default-university';
+
+                    const response = await fetch(`${apiUrl}/stripe/subscription/${userId}/${universityId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        apiSubscriptionData = await response.json();
+                    }
+                }
+            } catch (apiError) {
+                console.warn('Failed to fetch subscription data from API:', apiError);
+            }
+
+            // Use API data if available, otherwise fall back to Cognito attributes
+            const subscriptionData = apiSubscriptionData ? {
+                plan: apiSubscriptionData.subscription_plan || 'free',
+                subscriptionStatus: apiSubscriptionData.subscription_status || 'trial',
+                trialEndsAt: apiSubscriptionData.trial_ends_at,
+                stripeCustomerId: apiSubscriptionData.stripe_customer_id,
+                stripeSubscriptionId: apiSubscriptionData.stripe_subscription_id,
+                subscriptionPlan: apiSubscriptionData.subscription_plan,
+                subscriptionEndsAt: apiSubscriptionData.subscription_ends_at
+            } : {
                 plan: userAttributes['custom:plan'] || 'free',
                 subscriptionStatus: userAttributes['custom:subscription_status'] || 'trial',
                 trialEndsAt: userAttributes['custom:trial_ends_at'],
@@ -51,11 +87,18 @@ export const SubscriptionProvider = ({ children }) => {
                 subscriptionEndsAt: userAttributes['custom:subscription_ends_at']
             };
 
-            // Calculate trial status
+            // Debug logging
+            console.log('SubscriptionContext - API Data:', apiSubscriptionData);
+            console.log('SubscriptionContext - Final Data:', subscriptionData);
+
+            // Calculate trial status - only for trial subscriptions, not active ones
             let trialStatus = null;
             if (subscriptionData.subscriptionStatus === 'trial' && subscriptionData.trialEndsAt) {
                 trialStatus = calculateTrialStatus(new Date().toISOString(), subscriptionData.trialEndsAt);
             }
+
+            // Debug logging for trial status
+            console.log('SubscriptionContext - Trial Status:', trialStatus);
 
             setSubscriptionStatus(subscriptionData);
             setTrialStatus(trialStatus);
@@ -69,13 +112,13 @@ export const SubscriptionProvider = ({ children }) => {
 
     // Check if user needs to subscribe
     const needsSubscription = () => {
-        if (!subscriptionStatus || !trialStatus) return false;
+        if (!subscriptionStatus) return false;
 
         // If user has active subscription, no need to subscribe
         if (subscriptionStatus.subscriptionStatus === 'active') return false;
 
         // If trial is expired, user needs to subscribe
-        if (subscriptionStatus.subscriptionStatus === 'trial' && trialStatus.isExpired) return true;
+        if (subscriptionStatus.subscriptionStatus === 'trial' && trialStatus && trialStatus.isExpired) return true;
 
         return false;
     };
@@ -121,6 +164,7 @@ export const SubscriptionProvider = ({ children }) => {
 
     // Refresh subscription data
     const refreshSubscription = () => {
+        console.log('SubscriptionContext - Manual refresh triggered');
         fetchSubscriptionData();
     };
 
