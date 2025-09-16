@@ -35,15 +35,8 @@ const Navigation = ({ user }) => {
     // Main navigation items (always visible)
     const mainNavItems = [
         { name: 'Home', path: '/', public: true },
-        { name: 'Dashboard', path: '/dashboard', public: false },
-    ];
-
-    // Secondary navigation items (grouped under a dropdown or secondary menu)
-    const secondaryNavItems = [
-        { name: 'Experiences', path: '/experiences', public: false, icon: '📝' },
-        { name: 'Courses', path: '/courses', public: false, icon: '📚' },
-        { name: 'GPA Calculator', path: '/gpa', public: false, icon: '🧮' },
-        { name: 'Portfolio', path: '/portfolio', public: false, icon: '📄' },
+        { name: 'Experiences', path: '/experiences', public: false },
+        { name: 'GPA', path: '/gpa', public: false },
     ];
 
     // User-specific items
@@ -83,8 +76,8 @@ const Navigation = ({ user }) => {
                                             key={item.name}
                                             onClick={() => navigate(item.path)}
                                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(item.path)
-                                                    ? 'bg-blue-100 text-blue-700 shadow-sm'
-                                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                                ? 'bg-blue-100 text-blue-700 shadow-sm'
+                                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                                                 }`}
                                         >
                                             {item.name}
@@ -93,35 +86,6 @@ const Navigation = ({ user }) => {
                                 }
                                 return null;
                             })}
-
-                            {/* Secondary Navigation Dropdown */}
-                            {user && (
-                                <div className="relative group">
-                                    <button className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 flex items-center space-x-1">
-                                        <span>Tools</span>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-
-                                    {/* Dropdown Menu */}
-                                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                        <div className="py-2">
-                                            {secondaryNavItems.map((item) => (
-                                                <button
-                                                    key={item.name}
-                                                    onClick={() => navigate(item.path)}
-                                                    className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors duration-150 flex items-center space-x-3 ${isActive(item.path) ? 'text-blue-700 bg-blue-50' : 'text-gray-700'
-                                                        }`}
-                                                >
-                                                    <span className="text-lg">{item.icon}</span>
-                                                    <span>{item.name}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
 
@@ -244,7 +208,6 @@ const Navigation = ({ user }) => {
                     <div className="px-4 py-4 bg-gray-50 border-t border-gray-200 space-y-4">
                         {/* Main Navigation */}
                         <div className="space-y-2">
-                            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Main</div>
                             {mainNavItems.map((item) => {
                                 if (item.public || user) {
                                     return (
@@ -255,8 +218,8 @@ const Navigation = ({ user }) => {
                                                 setIsMobileMenuOpen(false);
                                             }}
                                             className={`w-full text-left px-4 py-3 rounded-lg text-base font-medium transition-colors duration-200 flex items-center space-x-3 ${isActive(item.path)
-                                                    ? 'bg-blue-100 text-blue-700'
-                                                    : 'text-gray-700 hover:bg-gray-100'
+                                                ? 'bg-blue-100 text-blue-700'
+                                                : 'text-gray-700 hover:bg-gray-100'
                                                 }`}
                                         >
                                             <span>{item.name}</span>
@@ -266,29 +229,6 @@ const Navigation = ({ user }) => {
                                 return null;
                             })}
                         </div>
-
-                        {/* Tools Section */}
-                        {user && (
-                            <div className="space-y-2">
-                                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tools</div>
-                                {secondaryNavItems.map((item) => (
-                                    <button
-                                        key={item.name}
-                                        onClick={() => {
-                                            navigate(item.path);
-                                            setIsMobileMenuOpen(false);
-                                        }}
-                                        className={`w-full text-left px-4 py-3 rounded-lg text-base font-medium transition-colors duration-200 flex items-center space-x-3 ${isActive(item.path)
-                                                ? 'bg-blue-100 text-blue-700'
-                                                : 'text-gray-700 hover:bg-gray-100'
-                                            }`}
-                                    >
-                                        <span className="text-lg">{item.icon}</span>
-                                        <span>{item.name}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
 
                         {/* User Section */}
                         {user ? (
@@ -343,8 +283,8 @@ const Navigation = ({ user }) => {
                                             setIsMobileMenuOpen(false);
                                         }}
                                         className={`w-full text-left px-4 py-3 rounded-lg text-base font-medium transition-colors duration-200 flex items-center space-x-3 ${isActive(item.path)
-                                                ? 'bg-blue-100 text-blue-700'
-                                                : 'text-gray-700 hover:bg-gray-100'
+                                            ? 'bg-blue-100 text-blue-700'
+                                            : 'text-gray-700 hover:bg-gray-100'
                                             }`}
                                     >
                                         <span className="text-lg">{item.icon}</span>

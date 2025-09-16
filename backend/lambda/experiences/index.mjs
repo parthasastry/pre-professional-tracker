@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 const tableName = process.env.TABLE_EXPERIENCES;
+const userGoalsTable = process.env.TABLE_USER_GOALS;
 
 export const handler = async (event) => {
     // Handle OPTIONS preflight
@@ -89,6 +90,14 @@ async function createExperience(item) {
         ConditionExpression: 'attribute_not_exists(experience_id) AND attribute_not_exists(university_id)'
     }));
 
+    // Update goal progress after creating experience
+    try {
+        await updateGoalProgress(item.user_id, item.university_id);
+    } catch (error) {
+        console.warn('Failed to update goal progress:', error);
+        // Don't fail the experience creation if goal update fails
+    }
+
     return formatResponse(201, { success: true, experience: item });
 }
 
@@ -155,6 +164,14 @@ async function updateExperience(user_id, experience_id, attributes) {
         ReturnValues: 'ALL_NEW'
     }));
 
+    // Update goal progress after updating experience
+    try {
+        await updateGoalProgress(user_id, response.Attributes.university_id);
+    } catch (error) {
+        console.warn('Failed to update goal progress:', error);
+        // Don't fail the experience update if goal update fails
+    }
+
     return formatResponse(200, response.Attributes);
 }
 
@@ -163,12 +180,110 @@ async function deleteExperience(user_id, experience_id) {
         return formatResponse(400, { error: 'User ID and Experience ID are required' });
     }
 
+    // Get the experience before deleting to get university_id
+    const experience = await docClient.send(new GetCommand({
+        TableName: tableName,
+        Key: { user_id, experience_id }
+    }));
+
     await docClient.send(new DeleteCommand({
         TableName: tableName,
         Key: { user_id, experience_id }
     }));
 
+    // Update goal progress after deleting experience
+    if (experience.Item) {
+        try {
+            await updateGoalProgress(user_id, experience.Item.university_id);
+        } catch (error) {
+            console.warn('Failed to update goal progress:', error);
+            // Don't fail the experience deletion if goal update fails
+        }
+    }
+
     return formatResponse(200, { success: true });
+}
+
+async function updateGoalProgress(userId, universityId) {
+    try {
+        const currentYear = getCurrentAcademicYear();
+
+        // Get user goals
+        const goalsResponse = await docClient.send(new GetCommand({
+            TableName: userGoalsTable,
+            Key: { user_id: userId, academic_year: currentYear }
+        }));
+
+        if (!goalsResponse.Item) {
+            // No goals exist, nothing to update
+            return;
+        }
+
+        const goals = goalsResponse.Item.goals;
+        const yearDates = getAcademicYearDates(currentYear);
+
+        // Get experiences for the current academic year
+        const experiencesResponse = await docClient.send(new QueryCommand({
+            TableName: tableName,
+            KeyConditionExpression: 'user_id = :user_id',
+            FilterExpression: 'start_date >= :start_date AND start_date <= :end_date',
+            ExpressionAttributeValues: {
+                ':user_id': userId,
+                ':start_date': yearDates.start_date,
+                ':end_date': yearDates.end_date
+            }
+        }));
+
+        const experiences = experiencesResponse.Items || [];
+
+        // Calculate current hours for each category
+        const updatedGoals = { ...goals };
+        for (const [category, goal] of Object.entries(goals)) {
+            const categoryExperiences = experiences.filter(exp => exp.category === category);
+            const currentHours = categoryExperiences.reduce((sum, exp) => sum + (exp.hours || 0), 0);
+
+            updatedGoals[category] = {
+                ...goal,
+                current_hours: currentHours
+            };
+        }
+
+        // Update the goals with current progress
+        await docClient.send(new UpdateCommand({
+            TableName: userGoalsTable,
+            Key: { user_id: userId, academic_year: currentYear },
+            UpdateExpression: 'SET goals = :goals, updated_at = :updated_at',
+            ExpressionAttributeValues: {
+                ':goals': updatedGoals,
+                ':updated_at': new Date().toISOString()
+            }
+        }));
+
+    } catch (error) {
+        console.error('Error updating goal progress:', error);
+        throw error;
+    }
+}
+
+function getCurrentAcademicYear() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-11
+
+    // Academic year runs Aug-May (August = 7)
+    if (month >= 7) { // August onwards
+        return `${year}-${year + 1}`;
+    } else {
+        return `${year - 1}-${year}`;
+    }
+}
+
+function getAcademicYearDates(academicYear) {
+    const [startYear, endYear] = academicYear.split('-');
+    return {
+        start_date: `${startYear}-08-01`,
+        end_date: `${endYear}-05-31`
+    };
 }
 
 function formatResponse(statusCode, body) {

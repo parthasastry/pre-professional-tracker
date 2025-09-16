@@ -17,6 +17,7 @@ export interface LambdaConstructProps {
     universitySettingsTable: dynamodb.Table;
     advisorsTable: dynamodb.Table;
     announcementsTable: dynamodb.Table;
+    userGoalsTable: dynamodb.Table;
     pdfsBucket: s3.Bucket;
 }
 
@@ -47,6 +48,10 @@ export class LambdaConstruct extends Construct {
     public readonly stripeSubscriptionLambda: lambda.Function;
     public readonly stripeWebhookLambda: lambda.Function;
 
+    // Goals and Progress Tracking
+    public readonly userGoalsLambda: lambda.Function;
+    public readonly goalsProgressLambda: lambda.Function;
+
     constructor(scope: Construct, id: string, props: LambdaConstructProps) {
         super(scope, id);
 
@@ -67,6 +72,7 @@ export class LambdaConstruct extends Construct {
                 TABLE_UNIVERSITY_SETTINGS: props.universitySettingsTable.tableName,
                 TABLE_ADVISORS: props.advisorsTable.tableName,
                 TABLE_ANNOUNCEMENTS: props.announcementsTable.tableName,
+                TABLE_USER_GOALS: props.userGoalsTable.tableName,
                 S3_PDFS_BUCKET: props.pdfsBucket.bucketName,
                 REGION: cdk.Stack.of(this).region,
                 STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
@@ -209,6 +215,24 @@ export class LambdaConstruct extends Construct {
             handler: 'index.handler',
         });
 
+        // User Goals Lambda
+        this.userGoalsLambda = new lambda.Function(this, 'UserGoalsLambda', {
+            ...commonLambdaProps,
+            functionName: 'pre-professional-tracker-user-goals',
+            description: 'Manage user goals and targets',
+            code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/lambda/user-goals')),
+            handler: 'index.handler',
+        });
+
+        // Goals Progress Lambda
+        this.goalsProgressLambda = new lambda.Function(this, 'GoalsProgressLambda', {
+            ...commonLambdaProps,
+            functionName: 'pre-professional-tracker-goals-progress',
+            description: 'Calculate progress towards goals',
+            code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/lambda/goals-progress')),
+            handler: 'index.handler',
+        });
+
         // Grant DynamoDB permissions to all Lambdas
         const dynamoDbPolicy = new iam.PolicyStatement({
             effect: iam.Effect.ALLOW,
@@ -233,6 +257,7 @@ export class LambdaConstruct extends Construct {
                 props.universitySettingsTable.tableArn,
                 props.advisorsTable.tableArn,
                 props.announcementsTable.tableArn,
+                props.userGoalsTable.tableArn,
                 `${props.universitiesTable.tableArn}/index/*`,
                 `${props.usersTable.tableArn}/index/*`,
                 `${props.experiencesTable.tableArn}/index/*`,
@@ -243,6 +268,7 @@ export class LambdaConstruct extends Construct {
                 `${props.universitySettingsTable.tableArn}/index/*`,
                 `${props.advisorsTable.tableArn}/index/*`,
                 `${props.announcementsTable.tableArn}/index/*`,
+                `${props.userGoalsTable.tableArn}/index/*`,
             ],
         });
 
@@ -284,6 +310,8 @@ export class LambdaConstruct extends Construct {
             this.universitySettingsLambda,
             this.advisorsLambda,
             this.announcementsLambda,
+            this.userGoalsLambda,
+            this.goalsProgressLambda,
             this.postConfirmationLambda,
             this.stripeSubscriptionLambda,
             this.stripeWebhookLambda,

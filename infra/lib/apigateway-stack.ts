@@ -21,6 +21,8 @@ export interface ApiGatewayConstructProps {
     announcementsLambda: lambda.Function;
     stripeSubscriptionLambda: lambda.Function;
     stripeWebhookLambda: lambda.Function;
+    userGoalsLambda: lambda.Function;
+    goalsProgressLambda: lambda.Function;
 }
 
 export class ApiGatewayConstruct extends Construct {
@@ -37,8 +39,9 @@ export class ApiGatewayConstruct extends Construct {
                 allowOrigins: [
                     'http://localhost:5173', // Vite dev server
                     'http://localhost:3000', // Fallback for other dev servers
-                    'https://*.amplifyapp.com', // AWS Amplify production
+                    'https://main.d2c235nmzfpvek.amplifyapp.com',
                     'https://*.vercel.app', // Vercel production
+                    'https://preproportfolio.pssastry.com'
                 ],
                 allowMethods: apigateway.Cors.ALL_METHODS,
                 allowHeaders: [
@@ -191,6 +194,31 @@ export class ApiGatewayConstruct extends Construct {
         // Stripe Webhook API (no authentication required)
         const webhookApi = this.api.root.addResource('stripe-webhook');
         webhookApi.addMethod('POST', createLambdaIntegration(props.stripeWebhookLambda));
+
+        // User Goals API
+        const userGoalsApi = this.api.root.addResource('user-goals');
+        addAuthorizedMethod(userGoalsApi, 'GET', createLambdaIntegration(props.userGoalsLambda));
+        addAuthorizedMethod(userGoalsApi, 'POST', createLambdaIntegration(props.userGoalsLambda));
+        addAuthorizedMethod(userGoalsApi, 'PUT', createLambdaIntegration(props.userGoalsLambda));
+
+        const userGoalApi = userGoalsApi.addResource('{user_id}');
+        addAuthorizedMethod(userGoalApi, 'GET', createLambdaIntegration(props.userGoalsLambda));
+        addAuthorizedMethod(userGoalApi, 'PUT', createLambdaIntegration(props.userGoalsLambda));
+
+        const userGoalYearApi = userGoalApi.addResource('{academic_year}');
+        addAuthorizedMethod(userGoalYearApi, 'GET', createLambdaIntegration(props.userGoalsLambda));
+        addAuthorizedMethod(userGoalYearApi, 'PUT', createLambdaIntegration(props.userGoalsLambda));
+
+        // Goals Progress API
+        const goalsProgressApi = this.api.root.addResource('goals-progress');
+        addAuthorizedMethod(goalsProgressApi, 'GET', createLambdaIntegration(props.goalsProgressLambda));
+        addAuthorizedMethod(goalsProgressApi, 'POST', createLambdaIntegration(props.goalsProgressLambda));
+
+        const goalsProgressUserApi = goalsProgressApi.addResource('{user_id}');
+        addAuthorizedMethod(goalsProgressUserApi, 'GET', createLambdaIntegration(props.goalsProgressLambda));
+
+        const goalsProgressUserYearApi = goalsProgressUserApi.addResource('{academic_year}');
+        addAuthorizedMethod(goalsProgressUserYearApi, 'GET', createLambdaIntegration(props.goalsProgressLambda));
 
         // Health Check API
         const healthApi = this.api.root.addResource('health');

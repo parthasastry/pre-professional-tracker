@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { useTrialStatus } from '../hooks/useTrialStatus';
+import { api } from '../services/api';
 import ExperienceForm from './ExperienceForm';
 import ExperienceCard from './ExperienceCard';
+import GoalProgressCard from './GoalProgressCard';
+import GoalsManagement from './GoalsManagement';
 
 const Experiences = () => {
     const { user } = useAuth();
@@ -18,6 +21,12 @@ const Experiences = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [experienceToDelete, setExperienceToDelete] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
+
+    // Goals state
+    const [goals, setGoals] = useState(null);
+    const [goalsProgress, setGoalsProgress] = useState(null);
+    const [showGoalsManagement, setShowGoalsManagement] = useState(false);
+    const [goalsLoading, setGoalsLoading] = useState(false);
 
     // Fetch experiences from API
     const fetchExperiences = async () => {
@@ -100,8 +109,9 @@ const Experiences = () => {
                 throw new Error(errorData.message || 'Failed to save experience');
             }
 
-            // Refresh the experiences list
+            // Refresh the experiences list and goals
             await fetchExperiences();
+            await fetchGoals();
             setShowForm(false);
             setEditingExperience(null);
         } catch (err) {
@@ -150,8 +160,9 @@ const Experiences = () => {
             setShowDeleteConfirm(false);
             setExperienceToDelete(null);
 
-            // Refresh the experiences list
+            // Refresh the experiences list and goals
             await fetchExperiences();
+            await fetchGoals();
 
             // Clear success message after 3 seconds
             setTimeout(() => {
@@ -185,6 +196,33 @@ const Experiences = () => {
         }
     });
 
+    // Fetch goals and progress
+    const fetchGoals = async () => {
+        try {
+            setGoalsLoading(true);
+            const userId = user.userId || user.username || user.sub;
+
+            // Fetch goals and progress in parallel
+            const [goalsData, progressData] = await Promise.all([
+                api.getGoals(userId),
+                api.getGoalsProgress(userId)
+            ]);
+
+            setGoals(goalsData.goals);
+            setGoalsProgress(progressData.progress);
+        } catch (err) {
+            console.error('Error fetching goals:', err);
+            // Don't show error for goals, just use default values
+        } finally {
+            setGoalsLoading(false);
+        }
+    };
+
+    // Handle goals updated
+    const handleGoalsUpdated = () => {
+        fetchGoals();
+    };
+
     // Calculate total hours by category
     const totalHours = experiences.reduce((total, exp) => total + (exp.hours || 0), 0);
     const shadowingHours = experiences
@@ -197,6 +235,7 @@ const Experiences = () => {
     useEffect(() => {
         if (user && user.universityId) {
             fetchExperiences();
+            fetchGoals();
         }
     }, [user, filter]);
 
@@ -237,57 +276,56 @@ const Experiences = () => {
                     </div>
                 </div>
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">Total Hours</p>
-                                <p className="text-2xl font-semibold text-gray-900">{totalHours}</p>
-                            </div>
+                {/* Goals Progress Cards */}
+                {goalsLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div className="bg-white rounded-lg shadow p-6 animate-pulse">
+                            <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                            <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
+                            <div className="h-2 bg-gray-200 rounded w-full"></div>
+                        </div>
+                        <div className="bg-white rounded-lg shadow p-6 animate-pulse">
+                            <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                            <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
+                            <div className="h-2 bg-gray-200 rounded w-full"></div>
                         </div>
                     </div>
-
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </div>
+                ) : goals && goalsProgress ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <GoalProgressCard
+                            category="shadowing"
+                            goal={goals.shadowing}
+                            progress={goalsProgress.shadowing}
+                            onEditClick={() => setShowGoalsManagement(true)}
+                        />
+                        <GoalProgressCard
+                            category="volunteering"
+                            goal={goals.volunteering}
+                            progress={goalsProgress.volunteering}
+                            onEditClick={() => setShowGoalsManagement(true)}
+                        />
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-lg shadow p-6 mb-8">
+                        <div className="text-center">
+                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
                             </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">Shadowing Hours</p>
-                                <p className="text-2xl font-semibold text-gray-900">{shadowingHours}</p>
-                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">Set Your Goals</h3>
+                            <p className="text-gray-600 mb-4">
+                                Track your progress towards shadowing and volunteering goals for this academic year.
+                            </p>
+                            <button
+                                onClick={() => setShowGoalsManagement(true)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+                            >
+                                Set Goals
+                            </button>
                         </div>
                     </div>
-
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">Volunteering Hours</p>
-                                <p className="text-2xl font-semibold text-gray-900">{volunteeringHours}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                )}
 
                 {/* Filters and Sort */}
                 <div className="bg-white rounded-lg shadow mb-6 p-4">
@@ -447,6 +485,14 @@ const Experiences = () => {
                             </div>
                         </div>
                     </div>
+                )}
+
+                {/* Goals Management Modal */}
+                {showGoalsManagement && (
+                    <GoalsManagement
+                        onGoalsUpdated={handleGoalsUpdated}
+                        onClose={() => setShowGoalsManagement(false)}
+                    />
                 )}
             </div>
         </div>

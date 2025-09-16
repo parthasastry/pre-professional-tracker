@@ -25,6 +25,7 @@ export class PreProfessionalTrackerStack extends cdk.Stack {
             universitySettingsTable: database.universitySettingsTable,
             advisorsTable: database.advisorsTable,
             announcementsTable: database.announcementsTable,
+            userGoalsTable: database.userGoalsTable,
             pdfsBucket: s3.pdfsBucket,
         });
 
@@ -49,6 +50,8 @@ export class PreProfessionalTrackerStack extends cdk.Stack {
             announcementsLambda: lambdas.announcementsLambda,
             stripeSubscriptionLambda: lambdas.stripeSubscriptionLambda,
             stripeWebhookLambda: lambdas.stripeWebhookLambda,
+            userGoalsLambda: lambdas.userGoalsLambda,
+            goalsProgressLambda: lambdas.goalsProgressLambda,
         });
 
         // Outputs

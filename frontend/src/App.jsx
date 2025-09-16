@@ -12,6 +12,7 @@ import Home from './components/Home';
 import Dashboard from './components/Dashboard';
 import Subscription from './components/Subscription';
 import Experiences from './components/Experiences';
+import GPA from './components/GPA';
 import RequireAuth from './components/RequireAuth';
 import TrialProtectedRoute from './components/TrialProtectedRoute';
 
@@ -63,6 +64,16 @@ const AppContent = () => {
               <RequireAuth>
                 <TrialProtectedRoute>
                   <Experiences />
+                </TrialProtectedRoute>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/gpa"
+            element={
+              <RequireAuth>
+                <TrialProtectedRoute>
+                  <GPA />
                 </TrialProtectedRoute>
               </RequireAuth>
             }

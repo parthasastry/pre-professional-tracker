@@ -23,6 +23,9 @@ export class DatabaseConstruct extends Construct {
     public readonly advisorsTable: dynamodb.Table;
     public readonly announcementsTable: dynamodb.Table;
 
+    // User goals and progress tracking
+    public readonly userGoalsTable: dynamodb.Table;
+
     constructor(scope: Construct, id: string) {
         super(scope, id);
 
@@ -201,6 +204,22 @@ export class DatabaseConstruct extends Construct {
             indexName: 'ExpirationIndex',
             partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'expires_at', type: dynamodb.AttributeType.STRING },
+        });
+
+        // User Goals Table - Personal goal tracking
+        this.userGoalsTable = new dynamodb.Table(this, 'UserGoalsTable', {
+            tableName: process.env.TABLE_USER_GOALS || 'pre-professional-tracker-user-goals',
+            partitionKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'academic_year', type: dynamodb.AttributeType.STRING },
+            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+            pointInTimeRecovery: true,
+        });
+
+        // GSI for querying by university and academic year
+        this.userGoalsTable.addGlobalSecondaryIndex({
+            indexName: 'UniversityYearIndex',
+            partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'academic_year', type: dynamodb.AttributeType.STRING },
         });
     }
 }

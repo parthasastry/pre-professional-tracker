@@ -37,12 +37,22 @@ const Footer = () => {
 
                 {/* Bottom Section */}
                 <div className="mt-12 pt-8 border-t border-gray-800">
-                    <div className="flex flex-col md:flex-row justify-between items-center">
-                        <div className="text-gray-400 text-sm text-center md:text-left mb-4 md:mb-0">
+                    <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                        <div className="text-gray-400 text-sm text-center md:text-left">
                             © {currentYear} Pre-Professional Tracker. All rights reserved.
                         </div>
                         <div className="text-gray-400 text-sm text-center md:text-right">
-                            Created by <span className="text-white font-medium">Vivek Amble</span> and <span className="text-white font-medium">Partha Sastry</span>
+                            <span className="block md:inline">
+                                Designed by <span className="text-white font-medium">Saketh Amble</span>
+                                <span className="text-gray-500 mx-1">•</span>
+                                <span className="text-gray-300 text-xs">Augusta University, GA</span>
+                            </span>
+                            <span className="hidden md:inline mx-2">•</span>
+                            <span className="block md:inline mt-1 md:mt-0">
+                                Created by <span className="text-white font-medium">Vivek Amble</span>
+                                <span className="text-gray-500 mx-1">and</span>
+                                <span className="text-white font-medium">Partha Sastry</span>
+                            </span>
                         </div>
                     </div>
                 </div>

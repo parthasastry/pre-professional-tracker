@@ -85,7 +85,7 @@ async function createCourse(item) {
     await docClient.send(new PutCommand({
         TableName: tableName,
         Item: item,
-        ConditionExpression: 'attribute_not_exists(course_id) AND attribute_not_exists(university_id)'
+        ConditionExpression: 'attribute_not_exists(course_id)'
     }));
 
     return formatResponse(201, { success: true, course: item });
@@ -120,7 +120,7 @@ async function listCourses(university_id, userId, semester) {
 
     const response = await docClient.send(new QueryCommand(queryParams));
 
-    return formatResponse(200, { items: response.Items || [] });
+    return formatResponse(200, { courses: response.Items || [] });
 }
 
 async function updateCourse(user_id, course_id, attributes) {

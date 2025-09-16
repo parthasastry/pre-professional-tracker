@@ -47,7 +47,6 @@ async function calculateGPA(user_id, university_id) {
     // Get all courses for the user
     const coursesResponse = await docClient.send(new QueryCommand({
         TableName: process.env.TABLE_COURSES,
-        IndexName: 'UserIndex',
         KeyConditionExpression: 'user_id = :user_id',
         ExpressionAttributeValues: { ':user_id': user_id }
     }));

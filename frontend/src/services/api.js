@@ -40,5 +40,45 @@ export const api = {
 
     async getUniversities() {
         return this.request('/universities');
+    },
+
+    // Goals API methods
+    async getGoals(userId, academicYear = null) {
+        const endpoint = academicYear
+            ? `/user-goals/${userId}/${academicYear}`
+            : `/user-goals/${userId}`;
+        return this.request(endpoint);
+    },
+
+    async createOrUpdateGoals(goalsData) {
+        return this.request('/user-goals', {
+            method: 'POST',
+            body: JSON.stringify(goalsData)
+        });
+    },
+
+    async updateGoals(userId, academicYear, goalsData) {
+        return this.request(`/user-goals/${userId}/${academicYear}`, {
+            method: 'PUT',
+            body: JSON.stringify(goalsData)
+        });
+    },
+
+    // Goals Progress API methods
+    async getGoalsProgress(userId, academicYear = null) {
+        const endpoint = academicYear
+            ? `/goals-progress/${userId}/${academicYear}`
+            : `/goals-progress/${userId}`;
+        return this.request(endpoint);
+    },
+
+    async calculateBulkProgress(userIds, academicYear = null) {
+        return this.request('/goals-progress/calculate', {
+            method: 'POST',
+            body: JSON.stringify({
+                user_ids: userIds,
+                academic_year: academicYear
+            })
+        });
     }
 };
