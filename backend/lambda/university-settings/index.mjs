@@ -100,8 +100,8 @@ async function updateUniversitySettings(university_id, settings) {
 function getDefaultSettings() {
     return {
         hour_goals: {
-            shadowing: 100,
-            volunteering: 200
+            shadowing: 0,
+            volunteering: 0
         },
         gpa_requirements: {
             minimum: 3.5,

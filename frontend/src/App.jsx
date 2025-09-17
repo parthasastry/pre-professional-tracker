@@ -9,7 +9,6 @@ import Login from './components/Auth';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import Home from './components/Home';
-import Dashboard from './components/Dashboard';
 import Subscription from './components/Subscription';
 import Experiences from './components/Experiences';
 import GPA from './components/GPA';
@@ -48,16 +47,7 @@ const AppContent = () => {
               </RequireAuth>
             }
           />
-          <Route
-            path="/dashboard"
-            element={
-              <RequireAuth>
-                <TrialProtectedRoute>
-                  <Dashboard />
-                </TrialProtectedRoute>
-              </RequireAuth>
-            }
-          />
+
           <Route
             path="/experiences"
             element={

@@ -145,7 +145,7 @@ const AuthenticatedRedirect = ({ user }) => {
                     ...userAttributes
                 });
                 setIsAuthenticated(true);
-                navigate('/dashboard');
+                navigate('/experiences');
             } catch (error) {
                 console.error('Error updating auth context:', error);
             }
@@ -158,7 +158,7 @@ const AuthenticatedRedirect = ({ user }) => {
         <div className="flex justify-center items-center h-screen">
             <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Redirecting to dashboard...</p>
+                <p className="mt-4 text-gray-600">Redirecting to experiences...</p>
             </div>
         </div>
     );
@@ -169,10 +169,10 @@ const Login = () => {
     const navigate = useNavigate();
     const { isAuthenticated, isLoading } = useAuth();
 
-    // If already authenticated, redirect to dashboard
+    // If already authenticated, redirect to experiences
     useEffect(() => {
         if (isAuthenticated) {
-            navigate('/dashboard');
+            navigate('/experiences');
         }
     }, [isAuthenticated, navigate]);
 

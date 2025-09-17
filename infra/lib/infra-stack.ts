@@ -40,7 +40,6 @@ export class PreProfessionalTrackerStack extends cdk.Stack {
             experiencesCRUDLambda: lambdas.experiencesCRUDLambda,
             coursesCRUDLambda: lambdas.coursesCRUDLambda,
             checklistCRUDLambda: lambdas.checklistCRUDLambda,
-            dashboardLambda: lambdas.dashboardLambda,
             gpaCalculatorLambda: lambdas.gpaCalculatorLambda,
             pdfGeneratorLambda: lambdas.pdfGeneratorLambda,
             analyticsLambda: lambdas.analyticsLambda,

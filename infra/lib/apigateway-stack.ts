@@ -11,7 +11,6 @@ export interface ApiGatewayConstructProps {
     experiencesCRUDLambda: lambda.Function;
     coursesCRUDLambda: lambda.Function;
     checklistCRUDLambda: lambda.Function;
-    dashboardLambda: lambda.Function;
     gpaCalculatorLambda: lambda.Function;
     pdfGeneratorLambda: lambda.Function;
     analyticsLambda: lambda.Function;
@@ -129,10 +128,6 @@ export class ApiGatewayConstruct extends Construct {
         addAuthorizedMethod(checklistItemApi, 'GET', createLambdaIntegration(props.checklistCRUDLambda));
         addAuthorizedMethod(checklistItemApi, 'PUT', createLambdaIntegration(props.checklistCRUDLambda));
         addAuthorizedMethod(checklistItemApi, 'DELETE', createLambdaIntegration(props.checklistCRUDLambda));
-
-        // Dashboard API
-        const dashboardApi = this.api.root.addResource('dashboard');
-        addAuthorizedMethod(dashboardApi, 'GET', createLambdaIntegration(props.dashboardLambda));
 
         // GPA Calculator API
         const gpaApi = this.api.root.addResource('gpa');

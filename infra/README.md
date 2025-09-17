@@ -128,7 +128,6 @@ The following Lambda functions are deployed:
 
 ### Specialized Functions
 
-- `dashboard` - Dashboard data aggregation
 - `gpa-calculator` - GPA and prerequisite calculations
 - `pdf-generator` - PDF portfolio generation
 - `analytics` - University analytics
@@ -149,7 +148,6 @@ The API Gateway provides the following endpoints:
 - `GET/POST /experiences` - Experience logging
 - `GET/POST /courses` - Course tracking
 - `GET/POST /checklist` - Checklist management
-- `GET /dashboard` - Dashboard data
 - `GET/POST /gpa` - GPA calculations
 - `POST /pdf` - PDF generation
 - `GET /analytics` - Analytics data

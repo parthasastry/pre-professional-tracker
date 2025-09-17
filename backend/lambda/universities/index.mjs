@@ -77,8 +77,8 @@ async function createUniversity(item) {
     };
     item.settings = item.settings || {
         hour_goals: {
-            shadowing: 100,
-            volunteering: 200
+            shadowing: 0,
+            volunteering: 0
         },
         gpa_requirements: {
             minimum: 3.5,

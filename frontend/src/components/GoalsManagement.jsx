@@ -6,12 +6,12 @@ const GoalsManagement = ({ onGoalsUpdated, onClose }) => {
     const { user } = useAuth();
     const [goals, setGoals] = useState({
         shadowing: {
-            target_hours: 100,
+            target_hours: 0,
             current_hours: 0,
             is_custom: false
         },
         volunteering: {
-            target_hours: 200,
+            target_hours: 0,
             current_hours: 0,
             is_custom: false
         }
@@ -110,12 +110,12 @@ const GoalsManagement = ({ onGoalsUpdated, onClose }) => {
     const resetToDefaults = () => {
         setGoals({
             shadowing: {
-                target_hours: 100,
+                target_hours: 0,
                 current_hours: 0,
                 is_custom: false
             },
             volunteering: {
-                target_hours: 200,
+                target_hours: 0,
                 current_hours: 0,
                 is_custom: false
             }
@@ -204,7 +204,7 @@ const GoalsManagement = ({ onGoalsUpdated, onClose }) => {
                                             value={goals.shadowing.target_hours}
                                             onChange={(e) => handleGoalChange('shadowing', 'target_hours', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                            placeholder="100"
+                                            placeholder="0"
                                         />
                                         <span className="absolute right-3 top-2 text-sm text-gray-500">hours</span>
                                     </div>
@@ -247,7 +247,7 @@ const GoalsManagement = ({ onGoalsUpdated, onClose }) => {
                                             value={goals.volunteering.target_hours}
                                             onChange={(e) => handleGoalChange('volunteering', 'target_hours', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                            placeholder="200"
+                                            placeholder="0"
                                         />
                                         <span className="absolute right-3 top-2 text-sm text-gray-500">hours</span>
                                     </div>

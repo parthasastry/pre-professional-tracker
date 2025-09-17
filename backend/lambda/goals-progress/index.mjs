@@ -230,10 +230,10 @@ function calculateProgress(goals, experiences, academicYear) {
 function getDefaultProgress() {
     return {
         shadowing: {
-            target_hours: 100,
+            target_hours: 0,
             current_hours: 0,
             percentage: 0,
-            remaining_hours: 100,
+            remaining_hours: 0,
             is_complete: false,
             is_on_track: true,
             time_progress: 0,
@@ -242,10 +242,10 @@ function getDefaultProgress() {
             last_experience: null
         },
         volunteering: {
-            target_hours: 200,
+            target_hours: 0,
             current_hours: 0,
             percentage: 0,
-            remaining_hours: 200,
+            remaining_hours: 0,
             is_complete: false,
             is_on_track: true,
             time_progress: 0,
@@ -254,7 +254,7 @@ function getDefaultProgress() {
             last_experience: null
         },
         overall: {
-            total_target_hours: 300,
+            total_target_hours: 0,
             total_current_hours: 0,
             overall_percentage: 0,
             is_on_track: true,

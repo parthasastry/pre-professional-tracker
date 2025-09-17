@@ -30,7 +30,6 @@ export class LambdaConstruct extends Construct {
     public readonly checklistCRUDLambda: lambda.Function;
 
     // Specialized Lambdas
-    public readonly dashboardLambda: lambda.Function;
     public readonly gpaCalculatorLambda: lambda.Function;
     public readonly pdfGeneratorLambda: lambda.Function;
     public readonly analyticsLambda: lambda.Function;
@@ -120,14 +119,6 @@ export class LambdaConstruct extends Construct {
             functionName: 'pre-professional-tracker-checklist-crud',
             description: 'Handle checklist CRUD operations',
             code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/lambda/checklist')),
-        });
-
-        // Dashboard Lambda
-        this.dashboardLambda = new lambda.Function(this, 'DashboardLambda', {
-            ...commonLambdaProps,
-            functionName: 'pre-professional-tracker-dashboard',
-            description: 'Generate dashboard data and analytics',
-            code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/lambda/dashboard')),
         });
 
         // GPA Calculator Lambda
@@ -304,7 +295,6 @@ export class LambdaConstruct extends Construct {
             this.experiencesCRUDLambda,
             this.coursesCRUDLambda,
             this.checklistCRUDLambda,
-            this.dashboardLambda,
             this.gpaCalculatorLambda,
             this.analyticsLambda,
             this.universitySettingsLambda,

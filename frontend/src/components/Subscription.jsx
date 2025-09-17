@@ -97,7 +97,7 @@ const Subscription = () => {
                 body: JSON.stringify({
                     action: 'create_checkout_session',
                     price_id: priceId,
-                    success_url: `${window.location.origin}/dashboard?subscription=success`,
+                    success_url: `${window.location.origin}/experiences?subscription=success`,
                     cancel_url: `${window.location.origin}/subscription?subscription=cancelled`
                 })
             });

@@ -195,7 +195,7 @@ function getDefaultGoals() {
 
     return {
         shadowing: {
-            target_hours: 100,
+            target_hours: 0,
             current_hours: 0,
             start_date: yearDates.start_date,
             end_date: yearDates.end_date,
@@ -203,7 +203,7 @@ function getDefaultGoals() {
             created_at: new Date().toISOString()
         },
         volunteering: {
-            target_hours: 200,
+            target_hours: 0,
             current_hours: 0,
             start_date: yearDates.start_date,
             end_date: yearDates.end_date,

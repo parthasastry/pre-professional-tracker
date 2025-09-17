@@ -292,18 +292,94 @@ const Experiences = () => {
                     </div>
                 ) : goals && goalsProgress ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <GoalProgressCard
-                            category="shadowing"
-                            goal={goals.shadowing}
-                            progress={goalsProgress.shadowing}
-                            onEditClick={() => setShowGoalsManagement(true)}
-                        />
-                        <GoalProgressCard
-                            category="volunteering"
-                            goal={goals.volunteering}
-                            progress={goalsProgress.volunteering}
-                            onEditClick={() => setShowGoalsManagement(true)}
-                        />
+                        {/* Shadowing Goal */}
+                        {goals.shadowing && goals.shadowing.target_hours > 0 ? (
+                            <GoalProgressCard
+                                category="shadowing"
+                                goal={goals.shadowing}
+                                progress={goalsProgress.shadowing}
+                                onEditClick={() => setShowGoalsManagement(true)}
+                            />
+                        ) : (
+                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+                                <div className="flex items-center mb-4">
+                                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                                        <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-gray-900">Shadowing Goal</h3>
+                                        <p className="text-sm text-gray-600">Set your target hours</p>
+                                    </div>
+                                </div>
+                                <div className="mb-4">
+                                    <div className="flex items-center text-orange-600 mb-2">
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                        </svg>
+                                        <span className="font-medium">Goal not set</span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Set your shadowing hours goal to track your progress effectively.
+                                    </p>
+                                    <button
+                                        onClick={() => setShowGoalsManagement(true)}
+                                        className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span>Set Shadowing Goal</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Volunteering Goal */}
+                        {goals.volunteering && goals.volunteering.target_hours > 0 ? (
+                            <GoalProgressCard
+                                category="volunteering"
+                                goal={goals.volunteering}
+                                progress={goalsProgress.volunteering}
+                                onEditClick={() => setShowGoalsManagement(true)}
+                            />
+                        ) : (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                                <div className="flex items-center mb-4">
+                                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-gray-900">Volunteering Goal</h3>
+                                        <p className="text-sm text-gray-600">Set your target hours</p>
+                                    </div>
+                                </div>
+                                <div className="mb-4">
+                                    <div className="flex items-center text-blue-600 mb-2">
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                        </svg>
+                                        <span className="font-medium">Goal not set</span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Set your volunteering hours goal to track your progress effectively.
+                                    </p>
+                                    <button
+                                        onClick={() => setShowGoalsManagement(true)}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span>Set Volunteering Goal</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="bg-white rounded-lg shadow p-6 mb-8">
