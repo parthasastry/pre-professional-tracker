@@ -43,6 +43,10 @@ export const api = {
     },
 
     // Goals API methods
+    async getCurrentAcademicYear(userId) {
+        return this.request(`/user-goals/${userId}/current-year`);
+    },
+
     async getGoals(userId, academicYear = null) {
         const endpoint = academicYear
             ? `/user-goals/${userId}/${academicYear}`

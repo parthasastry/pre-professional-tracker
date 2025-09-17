@@ -43,6 +43,10 @@ export const handler = async (event) => {
         switch (httpMethod) {
             case 'GET':
                 if (academic_year) {
+                    if (academic_year === 'current-year') {
+                        // Special endpoint to get current academic year
+                        return formatResponse(200, { academic_year: getCurrentAcademicYear() });
+                    }
                     return await getUserGoals(userId, academic_year);
                 } else {
                     // Get current academic year goals

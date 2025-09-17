@@ -21,31 +21,21 @@ const GoalsManagement = ({ onGoalsUpdated, onClose }) => {
     const [error, setError] = useState(null);
     const [academicYear, setAcademicYear] = useState('');
 
-    // Get current academic year
-    const getCurrentAcademicYear = () => {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth(); // 0-11
-
-        // Academic year runs Aug-May (August = 7)
-        if (month >= 7) { // August onwards
-            return `${year}-${year + 1}`;
-        } else {
-            return `${year - 1}-${year}`;
-        }
-    };
-
-    // Load existing goals
+    // Load existing goals and get current academic year from backend
     useEffect(() => {
         const loadGoals = async () => {
             try {
                 setLoading(true);
                 setError(null);
 
-                const currentYear = getCurrentAcademicYear();
+                const userId = user.userId || user.username || user.sub;
+
+                // Get current academic year from backend
+                const academicYearResponse = await api.getCurrentAcademicYear(userId);
+                const currentYear = academicYearResponse.academic_year;
                 setAcademicYear(currentYear);
 
-                const userId = user.userId || user.username || user.sub;
+                // Load goals for the current academic year
                 const goalsData = await api.getGoals(userId, currentYear);
 
                 if (goalsData.goals) {
