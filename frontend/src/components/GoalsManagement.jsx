@@ -201,7 +201,7 @@ const GoalsManagement = ({ onGoalsUpdated, onClose }) => {
                                         <input
                                             type="number"
                                             min="0"
-                                            value={goals.shadowing.target_hours}
+                                            value={goals.shadowing.target_hours || ''}
                                             onChange={(e) => handleGoalChange('shadowing', 'target_hours', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                                             placeholder="0"
@@ -244,7 +244,7 @@ const GoalsManagement = ({ onGoalsUpdated, onClose }) => {
                                         <input
                                             type="number"
                                             min="0"
-                                            value={goals.volunteering.target_hours}
+                                            value={goals.volunteering.target_hours || ''}
                                             onChange={(e) => handleGoalChange('volunteering', 'target_hours', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                                             placeholder="0"
