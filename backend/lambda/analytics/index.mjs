@@ -106,11 +106,11 @@ function calculateUniversityStats(students, experiences, courses, checklistItems
     // Experience statistics
     const shadowingHours = experiences
         .filter(exp => exp.category === 'shadowing')
-        .reduce((total, exp) => total + (parseFloat(exp.hours) || 0), 0);
+        .reduce((total, exp) => total + (parseFloat(exp.total_hours) || 0), 0);
 
     const volunteeringHours = experiences
         .filter(exp => exp.category === 'volunteering')
-        .reduce((total, exp) => total + (parseFloat(exp.hours) || 0), 0);
+        .reduce((total, exp) => total + (parseFloat(exp.total_hours) || 0), 0);
 
     const avgShadowingHours = totalStudents > 0 ? shadowingHours / totalStudents : 0;
     const avgVolunteeringHours = totalStudents > 0 ? volunteeringHours / totalStudents : 0;

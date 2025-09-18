@@ -90,24 +90,6 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* Stats Section */}
-            <section className="py-16 bg-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                        {stats.map((stat, index) => (
-                            <div key={index} className="text-center">
-                                <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
-                                    {stat.number}
-                                </div>
-                                <div className="text-gray-600 font-medium">
-                                    {stat.label}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
             {/* Features Section */}
             <section className="py-20 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -199,7 +181,7 @@ const Home = () => {
                         Ready to Start Your Journey?
                     </h2>
                     <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-                        Join thousands of pre-health students who are already tracking their progress
+                        Join pre-health students who are already tracking their progress
                         and building competitive applications.
                     </p>
                     {!isAuthenticated && (

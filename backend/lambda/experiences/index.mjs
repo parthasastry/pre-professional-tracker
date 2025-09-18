@@ -44,6 +44,9 @@ export const handler = async (event) => {
                     return await listExperiences(universityId, userId, category);
                 }
             case 'POST':
+                // Add user_id and university_id from JWT token to payload
+                payload.user_id = userId;
+                payload.university_id = universityId;
                 return await createExperience(payload);
             case 'PUT':
                 return await updateExperience(userId, experience_id, payload);
@@ -67,8 +70,8 @@ async function createExperience(item) {
     }
 
     // Validate required fields
-    if (!item.user_id || !item.category || !item.title || !item.organization || !item.hours) {
-        return formatResponse(400, { error: 'user_id, category, title, organization, and hours are required' });
+    if (!item.user_id || !item.category || !item.title || !item.organization) {
+        return formatResponse(400, { error: 'user_id, category, title, and organization are required' });
     }
 
     // Validate category
@@ -83,6 +86,11 @@ async function createExperience(item) {
     // Set default values
     item.status = item.status || 'active';
     item.description = item.description || '';
+    item.total_hours = 0; // Will be calculated from sessions
+    item.session_count = 0; // Will be calculated from sessions
+
+    // Remove any hours field that might be passed from frontend
+    delete item.hours;
 
     await docClient.send(new PutCommand({
         TableName: tableName,
@@ -186,19 +194,48 @@ async function deleteExperience(user_id, experience_id) {
         Key: { user_id, experience_id }
     }));
 
+    if (!experience.Item) {
+        return formatResponse(404, { error: 'Experience not found' });
+    }
+
+    // Delete all sessions associated with this experience
+    try {
+        const sessionsResponse = await docClient.send(new QueryCommand({
+            TableName: process.env.TABLE_SESSIONS,
+            KeyConditionExpression: 'experience_id = :experience_id',
+            ExpressionAttributeValues: { ':experience_id': experience_id }
+        }));
+
+        // Delete each session
+        const deletePromises = (sessionsResponse.Items || []).map(session =>
+            docClient.send(new DeleteCommand({
+                TableName: process.env.TABLE_SESSIONS,
+                Key: {
+                    experience_id: session.experience_id,
+                    session_id: session.session_id
+                }
+            }))
+        );
+
+        await Promise.all(deletePromises);
+        console.log(`Deleted ${sessionsResponse.Items?.length || 0} sessions for experience ${experience_id}`);
+    } catch (error) {
+        console.warn('Failed to delete sessions:', error);
+        // Continue with experience deletion even if session deletion fails
+    }
+
+    // Delete the experience
     await docClient.send(new DeleteCommand({
         TableName: tableName,
         Key: { user_id, experience_id }
     }));
 
     // Update goal progress after deleting experience
-    if (experience.Item) {
-        try {
-            await updateGoalProgress(user_id, experience.Item.university_id);
-        } catch (error) {
-            console.warn('Failed to update goal progress:', error);
-            // Don't fail the experience deletion if goal update fails
-        }
+    try {
+        await updateGoalProgress(user_id, experience.Item.university_id);
+    } catch (error) {
+        console.warn('Failed to update goal progress:', error);
+        // Don't fail the experience deletion if goal update fails
     }
 
     return formatResponse(200, { success: true });
@@ -240,7 +277,7 @@ async function updateGoalProgress(userId, universityId) {
         const updatedGoals = { ...goals };
         for (const [category, goal] of Object.entries(goals)) {
             const categoryExperiences = experiences.filter(exp => exp.category === category);
-            const currentHours = categoryExperiences.reduce((sum, exp) => sum + (exp.hours || 0), 0);
+            const currentHours = categoryExperiences.reduce((sum, exp) => sum + (exp.total_hours || 0), 0);
 
             updatedGoals[category] = {
                 ...goal,

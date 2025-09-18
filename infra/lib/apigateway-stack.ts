@@ -11,6 +11,7 @@ export interface ApiGatewayConstructProps {
     experiencesCRUDLambda: lambda.Function;
     coursesCRUDLambda: lambda.Function;
     checklistCRUDLambda: lambda.Function;
+    sessionsCRUDLambda: lambda.Function;
     gpaCalculatorLambda: lambda.Function;
     pdfGeneratorLambda: lambda.Function;
     analyticsLambda: lambda.Function;
@@ -109,6 +110,10 @@ export class ApiGatewayConstruct extends Construct {
         addAuthorizedMethod(experienceApi, 'PUT', createLambdaIntegration(props.experiencesCRUDLambda));
         addAuthorizedMethod(experienceApi, 'DELETE', createLambdaIntegration(props.experiencesCRUDLambda));
 
+        // Sessions by experience API - add to existing experience resource
+        const sessionsByExperienceApi = experienceApi.addResource('sessions');
+        addAuthorizedMethod(sessionsByExperienceApi, 'GET', createLambdaIntegration(props.sessionsCRUDLambda));
+
         // Courses API
         const coursesApi = this.api.root.addResource('courses');
         addAuthorizedMethod(coursesApi, 'GET', createLambdaIntegration(props.coursesCRUDLambda));
@@ -128,6 +133,17 @@ export class ApiGatewayConstruct extends Construct {
         addAuthorizedMethod(checklistItemApi, 'GET', createLambdaIntegration(props.checklistCRUDLambda));
         addAuthorizedMethod(checklistItemApi, 'PUT', createLambdaIntegration(props.checklistCRUDLambda));
         addAuthorizedMethod(checklistItemApi, 'DELETE', createLambdaIntegration(props.checklistCRUDLambda));
+
+        // Sessions API
+        const sessionsApi = this.api.root.addResource('sessions');
+        addAuthorizedMethod(sessionsApi, 'GET', createLambdaIntegration(props.sessionsCRUDLambda));
+        addAuthorizedMethod(sessionsApi, 'POST', createLambdaIntegration(props.sessionsCRUDLambda));
+
+        const sessionApi = sessionsApi.addResource('{session_id}');
+        addAuthorizedMethod(sessionApi, 'GET', createLambdaIntegration(props.sessionsCRUDLambda));
+        addAuthorizedMethod(sessionApi, 'PUT', createLambdaIntegration(props.sessionsCRUDLambda));
+        addAuthorizedMethod(sessionApi, 'DELETE', createLambdaIntegration(props.sessionsCRUDLambda));
+
 
         // GPA Calculator API
         const gpaApi = this.api.root.addResource('gpa');

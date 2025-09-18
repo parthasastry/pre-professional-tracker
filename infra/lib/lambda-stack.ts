@@ -18,6 +18,7 @@ export interface LambdaConstructProps {
     advisorsTable: dynamodb.Table;
     announcementsTable: dynamodb.Table;
     userGoalsTable: dynamodb.Table;
+    sessionsTable: dynamodb.Table;
     pdfsBucket: s3.Bucket;
 }
 
@@ -28,6 +29,7 @@ export class LambdaConstruct extends Construct {
     public readonly experiencesCRUDLambda: lambda.Function;
     public readonly coursesCRUDLambda: lambda.Function;
     public readonly checklistCRUDLambda: lambda.Function;
+    public readonly sessionsCRUDLambda: lambda.Function;
 
     // Specialized Lambdas
     public readonly gpaCalculatorLambda: lambda.Function;
@@ -72,6 +74,7 @@ export class LambdaConstruct extends Construct {
                 TABLE_ADVISORS: props.advisorsTable.tableName,
                 TABLE_ANNOUNCEMENTS: props.announcementsTable.tableName,
                 TABLE_USER_GOALS: props.userGoalsTable.tableName,
+                TABLE_SESSIONS: props.sessionsTable.tableName,
                 S3_PDFS_BUCKET: props.pdfsBucket.bucketName,
                 REGION: cdk.Stack.of(this).region,
                 STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
@@ -119,6 +122,14 @@ export class LambdaConstruct extends Construct {
             functionName: 'pre-professional-tracker-checklist-crud',
             description: 'Handle checklist CRUD operations',
             code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/lambda/checklist')),
+        });
+
+        // Sessions CRUD Lambda
+        this.sessionsCRUDLambda = new lambda.Function(this, 'SessionsCRUDLambda', {
+            ...commonLambdaProps,
+            functionName: 'pre-professional-tracker-sessions-crud',
+            description: 'Handle session CRUD operations',
+            code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/lambda/sessions')),
         });
 
         // GPA Calculator Lambda
@@ -249,6 +260,7 @@ export class LambdaConstruct extends Construct {
                 props.advisorsTable.tableArn,
                 props.announcementsTable.tableArn,
                 props.userGoalsTable.tableArn,
+                props.sessionsTable.tableArn,
                 `${props.universitiesTable.tableArn}/index/*`,
                 `${props.usersTable.tableArn}/index/*`,
                 `${props.experiencesTable.tableArn}/index/*`,
@@ -260,6 +272,7 @@ export class LambdaConstruct extends Construct {
                 `${props.advisorsTable.tableArn}/index/*`,
                 `${props.announcementsTable.tableArn}/index/*`,
                 `${props.userGoalsTable.tableArn}/index/*`,
+                `${props.sessionsTable.tableArn}/index/*`,
             ],
         });
 
@@ -295,6 +308,7 @@ export class LambdaConstruct extends Construct {
             this.experiencesCRUDLambda,
             this.coursesCRUDLambda,
             this.checklistCRUDLambda,
+            this.sessionsCRUDLambda,
             this.gpaCalculatorLambda,
             this.analyticsLambda,
             this.universitySettingsLambda,

@@ -26,6 +26,9 @@ export class DatabaseConstruct extends Construct {
     // User goals and progress tracking
     public readonly userGoalsTable: dynamodb.Table;
 
+    // Sessions table for individual experience sessions
+    public readonly sessionsTable: dynamodb.Table;
+
     constructor(scope: Construct, id: string) {
         super(scope, id);
 
@@ -220,6 +223,36 @@ export class DatabaseConstruct extends Construct {
             indexName: 'UniversityYearIndex',
             partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'academic_year', type: dynamodb.AttributeType.STRING },
+        });
+
+        // Sessions Table - Individual experience sessions
+        this.sessionsTable = new dynamodb.Table(this, 'SessionsTable', {
+            tableName: process.env.TABLE_SESSIONS || 'pre-professional-tracker-sessions',
+            partitionKey: { name: 'experience_id', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'session_id', type: dynamodb.AttributeType.STRING },
+            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+            pointInTimeRecovery: true,
+        });
+
+        // GSI for querying sessions by user
+        this.sessionsTable.addGlobalSecondaryIndex({
+            indexName: 'UserIndex',
+            partitionKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'date', type: dynamodb.AttributeType.STRING },
+        });
+
+        // GSI for querying sessions by university
+        this.sessionsTable.addGlobalSecondaryIndex({
+            indexName: 'UniversityIndex',
+            partitionKey: { name: 'university_id', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'date', type: dynamodb.AttributeType.STRING },
+        });
+
+        // GSI for querying sessions by category
+        this.sessionsTable.addGlobalSecondaryIndex({
+            indexName: 'CategoryIndex',
+            partitionKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'category', type: dynamodb.AttributeType.STRING },
         });
     }
 }

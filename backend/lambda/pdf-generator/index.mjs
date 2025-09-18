@@ -151,11 +151,11 @@ function generatePDFContent(data) {
     // Calculate totals
     const shadowingHours = experiences
         .filter(exp => exp.category === 'shadowing')
-        .reduce((total, exp) => total + (parseFloat(exp.hours) || 0), 0);
+        .reduce((total, exp) => total + (parseFloat(exp.total_hours) || 0), 0);
 
     const volunteeringHours = experiences
         .filter(exp => exp.category === 'volunteering')
-        .reduce((total, exp) => total + (parseFloat(exp.hours) || 0), 0);
+        .reduce((total, exp) => total + (parseFloat(exp.total_hours) || 0), 0);
 
     // Calculate GPA
     const totalCredits = courses.reduce((total, course) => total + (parseFloat(course.credits) || 0), 0);
@@ -227,7 +227,7 @@ function generatePDFContent(data) {
                             <td>${exp.title}</td>
                             <td>${exp.organization}</td>
                             <td>${exp.category}</td>
-                            <td>${exp.hours}</td>
+                            <td>${exp.total_hours || 0}</td>
                             <td>${new Date(exp.created_at).toLocaleDateString()}</td>
                         </tr>
                     `).join('')}

@@ -178,7 +178,7 @@ function calculateProgress(goals, experiences, academicYear) {
     // Calculate progress for each goal category
     for (const [category, goal] of Object.entries(goals)) {
         const categoryExperiences = experiences.filter(exp => exp.category === category);
-        const currentHours = categoryExperiences.reduce((sum, exp) => sum + (exp.hours || 0), 0);
+        const currentHours = categoryExperiences.reduce((sum, exp) => sum + (exp.total_hours || 0), 0);
         const targetHours = goal.target_hours || 0;
         const percentage = targetHours > 0 ? Math.min(100, (currentHours / targetHours) * 100) : 0;
         const remaining = Math.max(0, targetHours - currentHours);

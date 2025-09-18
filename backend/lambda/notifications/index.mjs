@@ -203,11 +203,11 @@ async function generateWeeklySummary(user, university_id) {
 
     const shadowingHours = recentExperiences
         .filter(exp => exp.category === 'shadowing')
-        .reduce((total, exp) => total + (parseFloat(exp.hours) || 0), 0);
+        .reduce((total, exp) => total + (parseFloat(exp.total_hours) || 0), 0);
 
     const volunteeringHours = recentExperiences
         .filter(exp => exp.category === 'volunteering')
-        .reduce((total, exp) => total + (parseFloat(exp.hours) || 0), 0);
+        .reduce((total, exp) => total + (parseFloat(exp.total_hours) || 0), 0);
 
     return `
         <html>
@@ -229,7 +229,7 @@ async function generateWeeklySummary(user, university_id) {
                     ${recentExperiences.map(exp => `
                         <li>
                             <strong>${exp.title}</strong> - ${exp.organization}
-                            (${exp.hours} hours)
+                            (${exp.total_hours || 0} hours)
                         </li>
                     `).join('')}
                 </ul>

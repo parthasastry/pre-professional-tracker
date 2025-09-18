@@ -120,6 +120,12 @@ const Experiences = () => {
         }
     };
 
+    // Handle experience update from child components (like when sessions change)
+    const handleExperienceUpdate = async () => {
+        await fetchExperiences();
+        await fetchGoals();
+    };
+
     // Handle experience deletion confirmation
     const handleDeleteClick = (experience) => {
         setExperienceToDelete(experience);
@@ -188,7 +194,7 @@ const Experiences = () => {
             case 'date':
                 return new Date(b.start_date || b.created_at) - new Date(a.start_date || a.created_at);
             case 'hours':
-                return b.hours - a.hours;
+                return (b.total_hours || 0) - (a.total_hours || 0);
             case 'title':
                 return a.title.localeCompare(b.title);
             default:
@@ -223,14 +229,14 @@ const Experiences = () => {
         fetchGoals();
     };
 
-    // Calculate total hours by category
-    const totalHours = experiences.reduce((total, exp) => total + (exp.hours || 0), 0);
+    // Calculate total hours by category from sessions
+    const totalHours = experiences.reduce((total, exp) => total + (exp.total_hours || 0), 0);
     const shadowingHours = experiences
         .filter(exp => exp.category === 'shadowing')
-        .reduce((total, exp) => total + (exp.hours || 0), 0);
+        .reduce((total, exp) => total + (exp.total_hours || 0), 0);
     const volunteeringHours = experiences
         .filter(exp => exp.category === 'volunteering')
-        .reduce((total, exp) => total + (exp.hours || 0), 0);
+        .reduce((total, exp) => total + (exp.total_hours || 0), 0);
 
     useEffect(() => {
         if (user && user.universityId) {
@@ -510,6 +516,7 @@ const Experiences = () => {
                                     setShowForm(true);
                                 }}
                                 onDelete={handleDeleteClick}
+                                onExperienceUpdate={handleExperienceUpdate}
                             />
                         ))}
                     </div>

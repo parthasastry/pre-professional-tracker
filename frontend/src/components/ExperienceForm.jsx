@@ -6,7 +6,6 @@ const ExperienceForm = ({ experience, onSave, onCancel }) => {
         organization: '',
         category: 'shadowing',
         description: '',
-        hours: '',
         start_date: '',
         end_date: '',
         location: '',
@@ -22,7 +21,6 @@ const ExperienceForm = ({ experience, onSave, onCancel }) => {
                 organization: experience.organization || '',
                 category: experience.category || 'shadowing',
                 description: experience.description || '',
-                hours: experience.hours || '',
                 start_date: experience.start_date ? experience.start_date.split('T')[0] : '',
                 end_date: experience.end_date ? experience.end_date.split('T')[0] : '',
                 location: experience.location || '',
@@ -58,10 +56,6 @@ const ExperienceForm = ({ experience, onSave, onCancel }) => {
             newErrors.organization = 'Organization is required';
         }
 
-        if (!formData.hours || formData.hours <= 0) {
-            newErrors.hours = 'Hours must be greater than 0';
-        }
-
         if (formData.start_date && formData.end_date) {
             if (new Date(formData.start_date) > new Date(formData.end_date)) {
                 newErrors.end_date = 'End date must be after start date';
@@ -84,7 +78,6 @@ const ExperienceForm = ({ experience, onSave, onCancel }) => {
         try {
             const submitData = {
                 ...formData,
-                hours: parseInt(formData.hours),
                 start_date: formData.start_date || null,
                 end_date: formData.end_date || null
             };
@@ -176,26 +169,6 @@ const ExperienceForm = ({ experience, onSave, onCancel }) => {
                                 </select>
                             </div>
 
-                            {/* Hours */}
-                            <div>
-                                <label htmlFor="hours" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Hours *
-                                </label>
-                                <input
-                                    type="number"
-                                    id="hours"
-                                    name="hours"
-                                    value={formData.hours}
-                                    onChange={handleChange}
-                                    min="1"
-                                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.hours ? 'border-red-300' : 'border-gray-300'
-                                        }`}
-                                    placeholder="0"
-                                />
-                                {errors.hours && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.hours}</p>
-                                )}
-                            </div>
 
                             {/* Start Date */}
                             <div>

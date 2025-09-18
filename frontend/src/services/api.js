@@ -84,5 +84,30 @@ export const api = {
                 academic_year: academicYear
             })
         });
+    },
+
+    // Sessions API methods
+    async getSessions(experienceId) {
+        return this.request(`/sessions?experience_id=${experienceId}`);
+    },
+
+    async createSession(sessionData) {
+        return this.request('/sessions', {
+            method: 'POST',
+            body: JSON.stringify(sessionData)
+        });
+    },
+
+    async updateSession(sessionId, sessionData) {
+        return this.request(`/sessions/${sessionId}`, {
+            method: 'PUT',
+            body: JSON.stringify(sessionData)
+        });
+    },
+
+    async deleteSession(sessionId) {
+        return this.request(`/sessions/${sessionId}`, {
+            method: 'DELETE'
+        });
     }
 };
