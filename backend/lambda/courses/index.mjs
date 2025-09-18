@@ -43,6 +43,9 @@ export const handler = async (event) => {
                     return await listCourses(universityId, userId, semester);
                 }
             case 'POST':
+                // Add user_id and university_id to the payload
+                payload.user_id = userId;
+                payload.university_id = universityId;
                 return await createCourse(payload);
             case 'PUT':
                 return await updateCourse(userId, course_id, payload);
@@ -128,44 +131,85 @@ async function updateCourse(user_id, course_id, attributes) {
         return formatResponse(400, { error: 'User ID and Course ID are required' });
     }
 
+    // Add updated timestamp
     attributes.updated_at = new Date().toISOString();
 
     // Recalculate GPA points if grade or credits changed
     if (attributes.grade || attributes.credits) {
-        const currentItem = await docClient.send(new GetCommand({
+        try {
+            const currentItem = await docClient.send(new GetCommand({
+                TableName: tableName,
+                Key: { user_id, course_id }
+            }));
+
+            if (currentItem.Item) {
+                const grade = attributes.grade || currentItem.Item.grade;
+                const credits = attributes.credits || currentItem.Item.credits;
+                attributes.gpa_points = calculateGPAPoints(grade, credits);
+            }
+        } catch (error) {
+            console.error('Error getting current item for GPA calculation:', error);
+        }
+    }
+
+    // Build update expression with proper handling of reserved words
+    const updateExpressions = [];
+    const expressionAttributeNames = {};
+    const expressionAttributeValues = {};
+
+    // Use a counter to ensure unique attribute names
+    let attrCounter = 0;
+
+    Object.entries(attributes).forEach(([key, value]) => {
+        // Skip null/undefined values
+        if (value === null || value === undefined) {
+            return;
+        }
+
+        const attrName = `#attr${attrCounter}`;
+        const attrValue = `:val${attrCounter}`;
+
+        expressionAttributeNames[attrName] = key;
+        expressionAttributeValues[attrValue] = value;
+        updateExpressions.push(`${attrName} = ${attrValue}`);
+
+        attrCounter++;
+    });
+
+    if (updateExpressions.length === 0) {
+        return formatResponse(400, { error: 'No valid attributes to update' });
+    }
+
+    const updateExpression = `SET ${updateExpressions.join(', ')}`;
+
+    try {
+        // First check if the course exists
+        const existingCourse = await docClient.send(new GetCommand({
             TableName: tableName,
             Key: { user_id, course_id }
         }));
 
-        if (currentItem.Item) {
-            const grade = attributes.grade || currentItem.Item.grade;
-            const credits = attributes.credits || currentItem.Item.credits;
-            attributes.gpa_points = calculateGPAPoints(grade, credits);
+        if (!existingCourse.Item) {
+            return formatResponse(404, { error: 'Course not found' });
         }
+
+        const response = await docClient.send(new UpdateCommand({
+            TableName: tableName,
+            Key: { user_id, course_id },
+            UpdateExpression: updateExpression,
+            ExpressionAttributeNames: expressionAttributeNames,
+            ExpressionAttributeValues: expressionAttributeValues,
+            ReturnValues: 'ALL_NEW'
+        }));
+
+        return formatResponse(200, response.Attributes);
+    } catch (error) {
+        console.error('Update failed:', error);
+        return formatResponse(500, {
+            error: 'Failed to update course',
+            details: error.message
+        });
     }
-
-    let updateExpression = 'SET';
-    const expressionAttributeNames = {};
-    const expressionAttributeValues = {};
-
-    Object.entries(attributes).forEach(([key, value], index) => {
-        const attrName = `#attr${index}`;
-        const attrValue = `:val${index}`;
-        expressionAttributeNames[attrName] = key;
-        expressionAttributeValues[attrValue] = value;
-        updateExpression += index === 0 ? ` ${attrName} = ${attrValue}` : `, ${attrName} = ${attrValue}`;
-    });
-
-    const response = await docClient.send(new UpdateCommand({
-        TableName: tableName,
-        Key: { user_id, course_id },
-        UpdateExpression: updateExpression,
-        ExpressionAttributeNames: expressionAttributeNames,
-        ExpressionAttributeValues: expressionAttributeValues,
-        ReturnValues: 'ALL_NEW'
-    }));
-
-    return formatResponse(200, response.Attributes);
 }
 
 async function deleteCourse(user_id, course_id) {

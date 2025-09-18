@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }) => {
                 });
                 setIsAuthenticated(true);
             } catch (error) {
-                console.log('User not authenticated');
                 setIsAuthenticated(false);
                 setUser(null);
             } finally {

@@ -81,12 +81,6 @@ const Subscription = () => {
             const apiUrl = import.meta.env.VITE_BASE_API_URL;
             const userId = user.userId || user.username || user.sub;
 
-            console.log('Creating checkout session with:', {
-                userId,
-                universityId: user.universityId,
-                priceId,
-                apiUrl: `${apiUrl}/stripe/subscription/${userId}/${user.universityId}`
-            });
 
             const response = await fetch(`${apiUrl}/stripe/subscription/${userId}/${user.universityId}`, {
                 method: 'POST',

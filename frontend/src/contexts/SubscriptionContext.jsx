@@ -87,9 +87,6 @@ export const SubscriptionProvider = ({ children }) => {
                 subscriptionEndsAt: userAttributes['custom:subscription_ends_at']
             };
 
-            // Debug logging
-            console.log('SubscriptionContext - API Data:', apiSubscriptionData);
-            console.log('SubscriptionContext - Final Data:', subscriptionData);
 
             // Calculate trial status - only for trial subscriptions, not active ones
             let trialStatus = null;
@@ -97,8 +94,6 @@ export const SubscriptionProvider = ({ children }) => {
                 trialStatus = calculateTrialStatus(new Date().toISOString(), subscriptionData.trialEndsAt);
             }
 
-            // Debug logging for trial status
-            console.log('SubscriptionContext - Trial Status:', trialStatus);
 
             setSubscriptionStatus(subscriptionData);
             setTrialStatus(trialStatus);
@@ -164,7 +159,6 @@ export const SubscriptionProvider = ({ children }) => {
 
     // Refresh subscription data
     const refreshSubscription = () => {
-        console.log('SubscriptionContext - Manual refresh triggered');
         fetchSubscriptionData();
     };
 
